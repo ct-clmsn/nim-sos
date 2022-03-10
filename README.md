@@ -87,7 +87,7 @@ The directory 'tests/' provides several examples regarding how to utilize this l
 
 ### Licenses
 
-* nsos is Boost Version 1.0 (2022-)
+* Boost Version 1.0 (2022-)
 
 ### Date
 
