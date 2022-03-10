@@ -2,13 +2,13 @@
 <!--                                                                                -->
 <!--   Distributed under the Boost Software License, Version 1.0. (See accompanying -->
 <!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
-# [nsos - Nim Sandia OpenShmem](https://github.com/ct-clmsn/nsos)
+# [nim-sos - Nim Sandia OpenShmem](https://github.com/ct-clmsn/nim-sos)
 
-`nsos` wraps the existing [SOS](https://github.com/Sandia-OpenSHMEM/SOS) OpenSHMEM library implemented by Sandia National
-Laboratory. `nsos` provides the [Nim](https://nim-lang.org) programming language support for distributed symmetric shared
+`nim-sos` wraps the existing [SOS](https://github.com/Sandia-OpenSHMEM/SOS) OpenSHMEM library implemented by Sandia National
+Laboratory. `nim-sos` provides the [Nim](https://nim-lang.org) programming language support for distributed symmetric shared
 memory.
 
-`nsos` provides a *symmetric sequence type*. Symmetric sequences are an extension to the existing [Nim sequence type](https://nim-lang.org/docs/system.html#seq)
+`nim-sos` provides a *symmetric sequence type*. Symmetric sequences are an extension to the existing [Nim sequence type](https://nim-lang.org/docs/system.html#seq)
 that wrap symmetric memory allocations. Symmetric sequences only supports values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types.
 Symmetric sequences provide element-access, slice, iterator, and partitioning support.
 
@@ -18,11 +18,11 @@ Use of the 'sosBlock' feature wraps the users code with the proper shmem_init an
 ### Developer Notes
 
 New users are encouraged to review the OpenSHMEM specification [here](http://openshmem.org/site/Specification). Programs
-implemented using `nsos` will require use of the [SPMD style](https://en.wikipedia.org/wiki/SPMD).
+implemented using `nim-sos` will require use of the [SPMD style](https://en.wikipedia.org/wiki/SPMD).
 
 # What is a *Symmetric Sequence*?
 
-Nim provides an array type called a 'sequence'. `nsos` provides a symmetric version of this data type. When instaniated, a
+Nim provides an array type called a 'sequence'. `nim-sos` provides a symmetric version of this data type. When instaniated, a
 symmetric sequence is created on each processing element (PE) running in SPMD. A processing element is a program process running
 on a computer or set of computers in a distributed fashion. Note SPMD can run in a distributed (cluster) or a single machine
 setting. Symmetric sequences are novel in that they are globally addressable. Users can 'get' from and 'put' into a remote
@@ -65,22 +65,25 @@ make
 
 Use the nimble tool to install nofi
 ```
-nimble install nsos
+nimble install sos
 ```
 
 Generate documentation from source
 ```
-nimble doc nsos
+nimble doc sos
 ```
 
 ### Running Programs
 
+```
 oshrun -n 2 -ppn 1 -hosts compute1,compute2
+```
+
+This library is designed to be run on an HPC system that manages jobs using the following workload managers: [Slurm](https://slurm.schedmd.com), PBS, etc.
 
 ### Examples
 
-The directory 'tests/' provides several examples regarding
-how to interact with this library.
+The directory 'tests/' provides several examples regarding how to utilize this library.
 
 ### Licenses
 
