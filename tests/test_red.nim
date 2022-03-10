@@ -5,7 +5,6 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 import ../sos/sos
-import ../sos/nsos
 
 sosBlock:
     var a = newSymSeq[int]([1,2,3,4,5])
