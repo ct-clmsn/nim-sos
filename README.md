@@ -97,7 +97,7 @@ The directory 'tests/' provides several examples regarding how to utilize this l
 
 Christopher Taylor
 
-### Special Thanks to the ROFI authors
+### Special Thanks to the OpenSHMEM developers 
 
 * Sandia National Labs/US Department of Energy
 
