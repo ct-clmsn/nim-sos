@@ -2,7 +2,7 @@
 <!--                                                                                -->
 <!--   Distributed under the Boost Software License, Version 1.0. (See accompanying -->
 <!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
-# [nim-sos - Nim Sandia OpenShmem](https://github.com/ct-clmsn/nim-sos)
+# [nim-sos - Nim Sandia OpenSHMEM](https://github.com/ct-clmsn/nim-sos)
 
 `nim-sos` wraps the existing [SOS](https://github.com/Sandia-OpenSHMEM/SOS) OpenSHMEM library implemented by Sandia National
 Laboratory. `nim-sos` provides the [Nim](https://nim-lang.org) programming language support for distributed symmetric shared
@@ -108,4 +108,4 @@ Christopher Taylor
 ### Dependencies
 
 * [nim 1.6.4](https://nim-lang.org)
-* [Sandia OpenShmem](https://github.com/pnnl/rofi)
+* [Sandia OpenSHMEM](https://github.com/pnnl/rofi)
