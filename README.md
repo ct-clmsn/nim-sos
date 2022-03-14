@@ -22,7 +22,7 @@ implemented using `nim-sos` will require use of the [SPMD style](https://en.wiki
 
 # What is a *Symmetric Sequence*?
 
-Nim provides an array type called a 'sequence'. `nim-sos` provides a symmetric version of this data type. When instaniated, a
+Nim provides an array type called a 'sequence'. `nim-sos` provides a symmetric version of this data type. When instantiated, a
 symmetric sequence is created on each processing element (PE) running in SPMD. A processing element is a program process running
 on a computer or set of computers in a distributed fashion. Note SPMD can run in a distributed (cluster) or a single machine
 setting. Symmetric sequences are novel in that they are globally addressable. Users can 'get' from and 'put' into a remote
