@@ -26,8 +26,7 @@ Nim provides an array type called a 'sequence'. `nim-sos` provides a symmetric v
 symmetric sequence is created on each processing element (PE) running in SPMD. A processing element is a program process running
 on a computer or set of computers in a distributed fashion. Note SPMD can run in a distributed (cluster) or a single machine
 setting. Symmetric sequences are novel in that they are globally addressable. Users can 'get' from and 'put' into a remote
-partition of the symmetric sequence. Symmetric Sequence operations are single-sided; this means PE 0 recieves no notifications
-in the event that partition 'A' is modified due to a communication operation.
+partition of the symmetric sequence.
 
 Consider the Symmetric Sequence 'S' that is created in an SPMD program running on 2 PEs. 'S' spans 2 PEs, or 2 processes residing
 on the same or a different machine.
@@ -44,7 +43,8 @@ on the same or a different machine.
 'S' is composed of two partitions, 'A' and 'B'. 'A' resides in the 1st processes memory (PE 0) and 'B' resides in a 2nd processes
 memory (PE 1). The process that contains partition 'A' can 'get' a copy of the values in partition 'B' using Symmetric Sequence 'S'
 as the shared point of reference. The process that contains partition 'B' can 'put' values into partition 'A' using the Symmetric
-Sequence 'S' as a shared point of reference.
+Sequence 'S' as a shared point of reference. Symmetric Sequence operations are single-sided. PE 0 recieves no notifications in the
+event partition 'A' is modified due to a communication operation.
 
 ### Install
 
