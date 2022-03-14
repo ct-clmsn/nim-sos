@@ -97,12 +97,9 @@ The directory 'tests/' provides several examples regarding how to utilize this l
 
 Christopher Taylor
 
-### Special Thanks to the OpenSHMEM developers 
-
-* Sandia National Labs/US Department of Energy
-
 ### Many Thanks
 
+* Sandia National Labs/US Department of Energy
 * The Nim community and user/developer forum
 
 ### Dependencies
