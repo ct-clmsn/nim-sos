@@ -115,36 +115,36 @@ proc put*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## nofi_wait. Do not modify the symseq before the transfer terminates
     ##
-    put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
+    bindings.put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
 proc get*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## synchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke nofi_wait.
     ## Do not modify the symseq before the transfer terminates
     ## 
-    get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
+    bindings.get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
 
 proc get*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
     result.setLen(self.len)
-    get(result, self, pe)
+    bindings.get(result, self, pe)
 
 proc nbput*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
     ## asynchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## nofi_wait. Do not modify the symseq before the transfer terminates
     ##
-    nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
+    bindings.nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
 proc nbget*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## asynchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke nofi_wait.
     ## Do not modify the symseq before the transfer terminates
     ## 
-    nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
+    bindings.nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
 
 proc nbget*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
     result.setLen(self.len)
-    get(result, self, pe)
+    bindings.get(result, self, pe)
 
 type ModeKind* = enum
     blocking,
@@ -181,13 +181,13 @@ type ReductionKind* = enum
 proc reduce*[T:SomeNumber](rk : ReductionKind, team : Team, dst : symseq[T], src : symseq[T] ) : T =
     case rk:
     of minop:
-        result = min_reduce(team, dst.data, src.data, dst.len)
+        result = bindings.min_reduce(team, dst.data, src.data, dst.len)
     of maxop:
-        result = max_reduce(team, dst.data, src.data, dst.len)
+        result = bindings.max_reduce(team, dst.data, src.data, dst.len)
     of sumop:
-        result = sum_reduce(team, dst.data, src.data, dst.len)
+        result = bindings.sum_reduce(team, dst.data, src.data, dst.len)
     of prodop: 
-        result = prod_reduce(team, dst.data, src.data, dst.len)
+        result = bindings.prod_reduce(team, dst.data, src.data, dst.len)
 
 proc min*[T:SomeNumber](team : Team, dst : symseq[T], src : symseq[T]) : T =
     result = reduce(minop, team, dst, src)
@@ -202,10 +202,10 @@ proc prod*[T:SomeNumber](team : Team, dst : symseq[T], src : symseq[T]) : T =
     result = reduce(prodop, team, dst, src)
 
 proc broadcast*[T:SomeNumber](team : Team, dst : symseq[T], src : symseq[T], root: int) : int =
-    result = broadcast(team, dst.data, src.data, dst.len, root)
+    result = bindings.broadcast(team, dst.data, src.data, dst.len, root)
 
 proc alltoall*[T:SomeNumber](team : Team, dst : symseq[T], src : symseq[T]) : int =
-    result = alltoall(team, dst.data, src, dst.len)
+    result = bindings.alltoall(team, dst.data, src, dst.len)
 
 proc fence*() =
     bindings.fence()
