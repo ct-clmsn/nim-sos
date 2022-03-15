@@ -23,11 +23,11 @@ implemented using `nim-sos` will require use of the [SPMD style](https://en.wiki
 # What is a *Symmetric Sequence*?
 
 Nim provides an array type called a 'sequence'. `nim-sos` provides a *symmetric* version of the `seq` data type. Symmetric
-sequences, instantiated by processing elements (PEs) running in SPMD, create a global sequence partitioned across the available
+sequences, instantiated by processing elements (PEs[1]) running in SPMD, create a global sequence partitioned across the available
 PEs. Symmetric sequences are novel in that their partitions are globally addressable. Users can `get` from and `put` into 
 a remote partition of the symmetric sequence.
 
-A PE is a program process running in SPMD on a computer or set of computers. Applications running in SPMD can run in a
+[1] A PE is a program process running in SPMD on a computer or set of computers. Applications running in SPMD can run in a
 distributed (cluster) or a single machine setting.
 
 Consider the Symmetric Sequence 'S' that is created in an SPMD program running on 2 PEs. 'S' spans 2 PEs, or 2 processes residing
