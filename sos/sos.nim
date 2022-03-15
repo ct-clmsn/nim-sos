@@ -111,26 +111,23 @@ iterator items[T:SomeNumber](self : symseq[T]) : T =
     for i in 0..self.len:
         yield self[i]
 
-proc len*[T:SomeNumber](x: symseq[T]): uint64 {.inline.} = x.len
+proc len*[T:SomeNumber](self: symseq[T]): uint64 {.inline.} = self.len
 
+proc range*(self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
 
-proc indices*(a : symseq[T]) : range[uint64] = a.sp..a.ep
-
-proc begin*(a : symseq[T]) : uint64 = a.sp
-
-proc end*(a : symseq[T]) : uint64 = a.ep
-
-iterator items*[T](a : symseq[T]) : T =
+iterator items*[T](self : symseq[T]) : T =
     ## iterator over the elements in a symseq
     ##
-    for i in a.sp..a.ep:
-        yield a.data[i-a.sp] 
+    let rng = self.range
+    for i in rng:
+        yield self.data[i-rng.sp] 
 
-iterator pairs*[T](a : symseq[T]) : T =
+iterator pairs*[T](self : symseq[T]) : T =
     ## iterator returns pairs (index, value) over elements in a symseq
     ##
-    for i in a.sp..a.ep:
-        yield (i, a.data[i-a.sp])
+    let rng = self.range
+    for i in rng.sp..rng.ep:
+        yield (i, self.data[i-rng.sp])
 
 proc distribute*[T : SomeNumber](src : symseq[T], num : Positive, spread=true) : seq[symseq[T]] =
     ## Splits a symseq[T] into num a sequence of symseq's;
