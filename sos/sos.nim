@@ -31,15 +31,18 @@ type symseq*[T : SomeNumber] = object
     ## is registered with libfabric for RDMA
     ## communications.
     ##
-    open : bool
+    owned : bool
     len : int
     data : ptr UncheckedArray[T]
+
+proc newSymSeq[T : SomeNumber]() : symseq[T] =
+    return symseq[T]( owned : false, len : 0, data : nil )
 
 proc newSymSeq*[T : SomeNumber](nelem : int) : symseq[T] =
     ## creates a symseq[T] with 'sz' number of
     ## elements of type 'T'
     ##
-    return symseq[T]( open : true, len : nelem, data : bindings.alloc[T](sizeof(T) * nelem) )
+    return symseq[T]( owned : true, len : nelem, data : bindings.alloc[T](sizeof(T) * nelem) )
 
 proc newSymSeq*[T : SomeNumber](elems: varargs[T]) : symseq[T] =
     ## creates a symseq[T] that has the same length
@@ -47,26 +50,26 @@ proc newSymSeq*[T : SomeNumber](elems: varargs[T]) : symseq[T] =
     ## symseq[T] is equal to the values in 'elems'
     ##
     let nelem = cast[int](elems.len)
-    var res = symseq[T]( open : true, len : nelem, data : bindings.alloc[T](sizeof(T) * nelem) )
+    var res = symseq[T]( owned : true, len : nelem, data : bindings.alloc[T](sizeof(T) * nelem) )
     for i in 0..<res.len: res.data[i] = elems[i]
     return res
 
 proc freeSymSeq*[T : SomeNumber](x : var symseq[T]) =
     ## manually frees a symseq[T]
     ##
-    if x.open:
+    if x.owned:
         x.len = 0
         bindings.free[T](x.data)
         x.data = nil
-        x.open = false
+        x.owned = false
 
 proc `=destroy`*[T:SomeNumber](x : var symseq[T]) =
     ## frees a symseq[T] when it falls out
     ## of scope
     ##
-    if x.open:
+    if x.owned:
         bindings.free[T](x.data)
-        x.open = false
+        x.owned = false
 
 proc `=sink`*[T:SomeNumber](a: var symseq[T], b: symseq[T]) =
     ## provides move assignment
@@ -110,16 +113,71 @@ iterator items[T:SomeNumber](self : symseq[T]) : T =
 
 proc len*[T:SomeNumber](x: symseq[T]): uint64 {.inline.} = x.len
 
-proc put*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
+
+proc indices*(a : symseq[T]) : range[uint64] = a.sp..a.ep
+
+proc begin*(a : symseq[T]) : uint64 = a.sp
+
+proc end*(a : symseq[T]) : uint64 = a.ep
+
+iterator items*[T](a : symseq[T]) : T =
+    ## iterator over the elements in a symseq
+    ##
+    for i in a.sp..a.ep:
+        yield a.data[i-a.sp] 
+
+iterator pairs*[T](a : symseq[T]) : T =
+    ## iterator returns pairs (index, value) over elements in a symseq
+    ##
+    for i in a.sp..a.ep:
+        yield (i, a.data[i-a.sp])
+
+proc distribute*[T : SomeNumber](src : symseq[T], num : Positive, spread=true) : seq[symseq[T]] =
+    ## Splits a symseq[T] into num a sequence of symseq's;
+    ## symseq's do not `own` their data.
+    ##
+    if num < 2:
+        result = @[s]
+        return
+
+    result = newSeq[symseq[T]](num)
+
+    var
+        stride = s.len div num
+        first = 0
+        last = 0
+        extra = s.len mod num
+
+    if extra == 0 or spread == false:
+        # Use an algorithm which overcounts the stride and minimizes reading limits.
+        if extra > 0: inc(stride)
+        for i in 0 ..< num:
+            result[i].data = src.data + first
+            result[i].len = min(s.len, first+stride)
+            result[i].owned = false
+            first += stride
+    else:
+        # Use an undercounting algorithm which *adds* the remainder each iteration.
+        for i in 0 ..< num:
+            last = first + stride
+            if extra > 0:
+                extra -= 1
+                inc(last)
+            result[i].data = src.data + first
+            result[i].len = last-first
+            result[i].owned = false
+            first = last    
+
+proc put*[T : SomeNumber](src : var ownedarray[T], dst : symseq[T], pe : int) =
     ## synchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
-    ## nofi_wait. Do not modify the symseq before the transfer terminates
+    ## sym_wait. Do not modify the symseq before the transfer terminates
     ##
     bindings.put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc get*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
+proc get*[T : SomeNumber](dst : var ownedarray[T], src : symseq[T], pe : int) =
     ## synchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
-    ## into the current process at address `dst`. Users must check for completion or invoke nofi_wait.
+    ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symseq before the transfer terminates
     ## 
     bindings.get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
@@ -128,16 +186,16 @@ proc get*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
     result.setLen(self.len)
     bindings.get(result, self, pe)
 
-proc nbput*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
+proc nbput*[T : SomeNumber](src : var ownedarray[T], dst : symseq[T], pe : int) =
     ## asynchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
-    ## nofi_wait. Do not modify the symseq before the transfer terminates
+    ## sym_wait. Do not modify the symseq before the transfer terminates
     ##
     bindings.nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc nbget*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
+proc nbget*[T : SomeNumber](dst : var ownedarray[T], src : symseq[T], pe : int) =
     ## asynchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
-    ## into the current process at address `dst`. Users must check for completion or invoke nofi_wait.
+    ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symseq before the transfer terminates
     ## 
     bindings.nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
@@ -150,14 +208,14 @@ type ModeKind* = enum
     blocking,
     nonblocking
 
-proc put*[T : SomeNumber](mk : ModeKind, src : var openarray[T], dst : symseq[T], pe : int) =
+proc put*[T : SomeNumber](mk : ModeKind, src : var ownedarray[T], dst : symseq[T], pe : int) =
     case mk:
     of blocking:
         put(src, dst, pe)
     of nonblocking:
         nbput(src, dst, pe)
 
-proc get*[T : SomeNumber](mk : ModeKind, dst : var openarray[T], src : symseq[T], pe : int) =
+proc get*[T : SomeNumber](mk : ModeKind, dst : var ownedarray[T], src : symseq[T], pe : int) =
     case mk:
     of blocking:
         get(dst, src, pe) 
@@ -218,3 +276,5 @@ template sosBlock*(body : untyped) =
     block:
         body
     bindings.fin()
+
+

@@ -45,7 +45,8 @@ on the same or a different machine.
 'S' is composed of two partitions, 'A' and 'B'. 'A' resides in the 1st processes memory (PE 0) and 'B' resides in a 2nd processes
 memory (PE 1). The process that contains partition 'A' can 'get' a copy of the values in partition 'B' using Symmetric Sequence 'S'
 as the shared point of reference. The process that contains partition 'B' can 'put' values into partition 'A' using the Symmetric
-Sequence 'S' as a shared point of reference.
+Sequence 'S' as a shared point of reference. Symmetric Sequence operations are single-sided. PE 0 receives no notifications in the
+event partition 'A' is modified due to a communication operation.
 
 Users are required the define the size of each partition when creating Symmetric Sequences. Calling the constructor for `newSymSeq[int](100)`
 for a 32 node program run will create a Symmetric Sequence with 32 partitions, each partition being 100 integers in type and length.
