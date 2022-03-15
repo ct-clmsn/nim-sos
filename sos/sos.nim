@@ -113,7 +113,9 @@ iterator items[T:SomeNumber](self : symseq[T]) : T =
 
 proc len*[T:SomeNumber](self: symseq[T]): uint64 {.inline.} = self.len
 
-proc range*(self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
+proc range*[T:SomeNumber](self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
+
+proc indices*[T:SomeNumber](self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
 
 iterator items*[T](self : symseq[T]) : T =
     ## iterator over the elements in a symseq
