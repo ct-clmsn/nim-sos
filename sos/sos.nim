@@ -5,6 +5,7 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 import ./bindings
+import std/math
 
 let WORLD* = bindings.TEAM_WORLD 
 let SHARED* = bindings.TEAM_SHARED
@@ -14,6 +15,15 @@ proc ini*() =
 
 proc fin*() =
     bindings.fin()
+
+proc npes() : uint32 =
+    result = bindings.n_pes()
+
+proc mype() : uint32 =
+    result = bindings.my_pe()
+
+proc partitionSizer(global_nelems : int) : int =
+    return int(ceil(float64(global_nelems) / float64(bindings.n_pes())))
 
 type symseq*[T : SomeNumber] = object
     ## a symsequence type for SomeNumber values;
@@ -58,7 +68,7 @@ proc `=destroy`*[T:SomeNumber](x : var symseq[T]) =
         bindings.free[T](x.data)
         x.open = false
 
-proc `=sink`*[T:SomeNumber](a: var symseq[T]; b: symseq[T]) =
+proc `=sink`*[T:SomeNumber](a: var symseq[T], b: symseq[T]) =
     ## provides move assignment
     ##
     `=destroy`(a)
@@ -69,18 +79,34 @@ proc `=sink`*[T:SomeNumber](a: var symseq[T]; b: symseq[T]) =
     a.len = b.len
     a.data = b.data
 
-proc `[]`*[T:SomeNumber](x:symseq[T]; i: Natural): lent T =
+proc `[]`*[T:SomeNumber](self:symseq[T], i: Natural): lent T =
     ## return a value at position 'i'
     ##
-    assert cast[uint64](i) < x.len
-    x.data[i]
+    assert cast[uint64](i) < self.len
+    self.data[i]
 
-proc `[]=`*[T:SomeNumber](x: var symseq[T]; i: Natural; y: sink T) =
+proc `[]=`*[T:SomeNumber](self: var symseq[T]; i: Natural; y: sink T) =
     ## assign a value at position 'i' equal to
     ## the value 'y'
     ##
-    assert i < x.len
-    x.data[i] = y
+    assert i < self.len
+    self.data[i] = y
+
+proc `[]`*[T:SomeNumber](self: var symseq[T], s : Slice[T]) : seq[T] =
+    assert( ((s.b-s.a) < self.len) and s.a > -1 and s.b < self.len )
+    let L = abs(s.b-s.a)
+    newSeq(result, L)
+    for i in 0 .. L: result[i] = self.data[i+s.a]
+
+proc `[]=`*[T:SomeNumber](self: var symseq[T], s : Slice[T], b : openarray[T]) =
+    assert( (s.a > -1) and (s.b < self.len) and ((s.b-s.a) < b.len) )
+    let L = s.b-s.a
+    let minL = min(L, b.len)
+    for i in 0 .. minL: self.data[i+s.a] = b[i]
+
+iterator items[T:SomeNumber](self : symseq[T]) : T =
+    for i in 0..self.len:
+        yield self[i]
 
 proc len*[T:SomeNumber](x: symseq[T]): uint64 {.inline.} = x.len
 
@@ -98,6 +124,10 @@ proc get*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## 
     get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
 
+proc get*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
+    result.setLen(self.len)
+    get(result, self, pe)
+
 proc nbput*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
     ## asynchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
@@ -111,6 +141,10 @@ proc nbget*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## Do not modify the symseq before the transfer terminates
     ## 
     nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
+
+proc nbget*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
+    result.setLen(self.len)
+    get(result, self, pe)
 
 type ModeKind* = enum
     blocking,
@@ -129,6 +163,14 @@ proc get*[T : SomeNumber](mk : ModeKind, dst : var openarray[T], src : symseq[T]
         get(dst, src, pe) 
     of nonblocking:
         nbget(dst, src, pe)
+
+proc get*[T : SomeNumber](self : symseq[T], mk : ModeKind, pe : int) : openarray[T] =
+    result.setLen(self.len)
+    get(result, self, pe)
+
+proc get*[T : SomeNumber](mk : ModeKind, self : symseq[T], pe : int) : openarray[T] =
+    result.setLen(self.len)
+    get(result, self, pe)
 
 type ReductionKind* = enum
     minop,

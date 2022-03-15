@@ -12,8 +12,8 @@ memory.
 that wrap symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types.
 Symmetric sequences provide element-access, slice, iterator, and partitioning support.
 
-This library also provides a convenient mechanism for implementing shmem programs using Nim templates and blocks.
-Use of the 'sosBlock' feature wraps the users code with the proper shmem_init and shmem_finalize calls.
+This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks.
+Use of the `sosBlock` feature wraps the users code with the proper `shmem_init` and `shmem_finalize` calls.
 
 ### Developer Notes
 
@@ -22,11 +22,13 @@ implemented using `nim-sos` will require use of the [SPMD style](https://en.wiki
 
 # What is a *Symmetric Sequence*?
 
-Nim provides an array type called a 'sequence'. `nim-sos` provides a symmetric version of this data type. When instaniated, a
-symmetric sequence is created on each processing element (PE) running in SPMD. A processing element is a program process running
-on a computer or set of computers in a distributed fashion. Note SPMD can run in a distributed (cluster) or a single machine
-setting. Symmetric sequences are novel in that they are globally addressable. Users can 'get' from and 'put' into a remote
-partition of the symmetric sequence.
+Nim provides an array type called a 'sequence'. `nim-sos` provides a *symmetric* version of th `seq` data type. Symmetric
+sequences, instantiated by processing elements (PEs) running in SPMD, create a global sequence partitioned across the available
+PEs. Symmetric sequences are novel in that their partitions are globally addressable. Users can `get` from and `put` into 
+a remote partition of the symmetric sequence.
+
+A PE is a program process running in SPMD on a computer or set of computers. Applications running in SPMD can run in a
+distributed (cluster) or a single machine setting.
 
 Consider the Symmetric Sequence 'S' that is created in an SPMD program running on 2 PEs. 'S' spans 2 PEs, or 2 processes residing
 on the same or a different machine.
@@ -44,6 +46,18 @@ on the same or a different machine.
 memory (PE 1). The process that contains partition 'A' can 'get' a copy of the values in partition 'B' using Symmetric Sequence 'S'
 as the shared point of reference. The process that contains partition 'B' can 'put' values into partition 'A' using the Symmetric
 Sequence 'S' as a shared point of reference.
+
+Users are required the define the size of each partition when creating Symmetric Sequences. Calling the constructor for `newSymSeq[int](100)`
+for a 32 node program run will create a Symmetric Sequence with 32 partitions, each partition being 100 integers in type and length.
+A convience function called `partitionSizer` is provided to calculate a partition size given the global number of elements that need
+to be stored. If a user needs a Symmetric Sequence stored on 32 nodes for 3200 integers, `partitionSizer` will peform the simple
+calculation and return 100 integers for each partition.
+
+### Productivity Support
+
+Programming in SPMD has a history of being a challenging exercise. This library will incrementally add support functionality that aims
+to provide users a more straight forward experience. Nim's metaprogramming capabilities are a rich suite of tools for innovative research
+and experimentation.
 
 ### Install
 
@@ -97,12 +111,10 @@ The directory 'tests/' provides several examples regarding how to utilize this l
 
 Christopher Taylor
 
-### Special Thanks to the OpenSHMEM developers 
+### Special Thanks
 
+* The OpenSHMEM developers
 * Sandia National Labs/US Department of Energy
-
-### Many Thanks
-
 * The Nim community and user/developer forum
 
 ### Dependencies
