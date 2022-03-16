@@ -54,12 +54,6 @@ A convenience function called `partitionSizer` is provided to calculate a partit
 to be stored. If a user needs a Symmetric Sequence stored on 32 nodes for 3200 integers, `partitionSizer` will peform the simple
 calculation and return 100 integers for each partition.
 
-### Productivity Support
-
-Programming in SPMD has a history of being a challenging exercise. This library will incrementally add support functionality that aims
-to provide users a more straight forward experience. Nim's metaprogramming capabilities are a rich suite of tools for innovative research
-and experimentation.
-
 ### Install
 
 Download and install [SOS](https://github.com/Sandia-OpenSHMEM/SOS)
