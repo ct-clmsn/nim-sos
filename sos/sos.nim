@@ -113,14 +113,14 @@ iterator items[T:SomeNumber](self : symseq[T]) : T =
 
 proc len*[T:SomeNumber](self: symseq[T]): uint64 {.inline.} = self.len
 
-iterator items*[T](self : symseq[T]) : T =
+iterator items*[T:SomeNumber](self : symseq[T]) : T =
     ## iterator over the elements in a symseq
     ##
     let rng = self.range
     for i in rng:
         yield self.data[i-rng.sp] 
 
-iterator pairs*[T](self : symseq[T]) : T =
+iterator pairs*[T:SomeNumber](self : symseq[T]) : T =
     ## iterator returns pairs (index, value) over elements in a symseq
     ##
     let rng = self.range
