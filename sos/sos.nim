@@ -113,10 +113,6 @@ iterator items[T:SomeNumber](self : symseq[T]) : T =
 
 proc len*[T:SomeNumber](self: symseq[T]): uint64 {.inline.} = self.len
 
-proc range*[T:SomeNumber](self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
-
-proc indices*[T:SomeNumber](self : symseq[T]) : range[uint64] {.inline.} = 0..<self.len
-
 iterator items*[T](self : symseq[T]) : T =
     ## iterator over the elements in a symseq
     ##
@@ -136,23 +132,23 @@ proc distribute*[T : SomeNumber](src : symseq[T], num : Positive, spread=true) :
     ## symseq's do not `own` their data.
     ##
     if num < 2:
-        result = @[s]
+        result = @[src]
         return
 
     result = newSeq[symseq[T]](num)
 
     var
-        stride = s.len div num
+        stride = src.len div num
         first = 0
         last = 0
-        extra = s.len mod num
+        extra = src.len mod num
 
     if extra == 0 or spread == false:
         # Use an algorithm which overcounts the stride and minimizes reading limits.
         if extra > 0: inc(stride)
         for i in 0 ..< num:
             result[i].data = src.data + first
-            result[i].len = min(s.len, first+stride)
+            result[i].len = min(src.len, first+stride)
             result[i].owned = false
             first += stride
     else:
@@ -167,14 +163,14 @@ proc distribute*[T : SomeNumber](src : symseq[T], num : Positive, spread=true) :
             result[i].owned = false
             first = last    
 
-proc put*[T : SomeNumber](src : var ownedarray[T], dst : symseq[T], pe : int) =
+proc put*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
     ## synchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## sym_wait. Do not modify the symseq before the transfer terminates
     ##
     bindings.put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc get*[T : SomeNumber](dst : var ownedarray[T], src : symseq[T], pe : int) =
+proc get*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## synchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symseq before the transfer terminates
@@ -185,14 +181,14 @@ proc get*[T : SomeNumber](self : symseq[T], pe : int) : openarray[T] =
     result.setLen(self.len)
     bindings.get(result, self, pe)
 
-proc nbput*[T : SomeNumber](src : var ownedarray[T], dst : symseq[T], pe : int) =
+proc nbput*[T : SomeNumber](src : var openarray[T], dst : symseq[T], pe : int) =
     ## asynchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## sym_wait. Do not modify the symseq before the transfer terminates
     ##
     bindings.nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc nbget*[T : SomeNumber](dst : var ownedarray[T], src : symseq[T], pe : int) =
+proc nbget*[T : SomeNumber](dst : var openarray[T], src : symseq[T], pe : int) =
     ## asynchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symseq before the transfer terminates
@@ -207,14 +203,14 @@ type ModeKind* = enum
     blocking,
     nonblocking
 
-proc put*[T : SomeNumber](mk : ModeKind, src : var ownedarray[T], dst : symseq[T], pe : int) =
+proc put*[T : SomeNumber](mk : ModeKind, src : var openarray[T], dst : symseq[T], pe : int) =
     case mk:
     of blocking:
         put(src, dst, pe)
     of nonblocking:
         nbput(src, dst, pe)
 
-proc get*[T : SomeNumber](mk : ModeKind, dst : var ownedarray[T], src : symseq[T], pe : int) =
+proc get*[T : SomeNumber](mk : ModeKind, dst : var openarray[T], src : symseq[T], pe : int) =
     case mk:
     of blocking:
         get(dst, src, pe) 
