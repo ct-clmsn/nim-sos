@@ -72,7 +72,7 @@ see if your setup compiles.
 make
 ```
 
-Use the nimble tool to install nofi
+Use the nimble tool to install `sos`
 ```
 nimble install sos
 ```
