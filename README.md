@@ -9,7 +9,7 @@ Laboratory. `nim-sos` provides the [Nim](https://nim-lang.org) programming langu
 memory.
 
 `nim-sos` provides a *symmetric sequence type*. Symmetric sequences are an extension to the existing [Nim sequence type](https://nim-lang.org/docs/system.html#seq)
-that wrap symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types.
+that wrap distributed symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types.
 Symmetric sequences provide element-access, slice, iterator, and partitioning support.
 
 This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks.
