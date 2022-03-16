@@ -51,7 +51,7 @@ event partition 'A' is modified due to a communication operation.
 Users are required the define the size of each partition when creating Symmetric Sequences. Calling the constructor for `newSymSeq[int](100)`
 for a 32 node program run will create a Symmetric Sequence with 32 partitions, each partition being 100 integers in type and length.
 A convenience function called `partitionSizer` is provided to calculate a partition size given the global number of elements that need
-to be stored. If a user needs a Symmetric Sequence stored on 32 nodes for 3200 integers, `partitionSizer` will peform the simple
+to be stored. If a user needs a Symmetric Sequence stored on 32 nodes for 3200 integers, `partitionSizer` will perform the simple
 calculation and return 100 integers for each partition.
 
 ### Install

@@ -107,10 +107,6 @@ proc `[]=`*[T:SomeNumber](self: var symseq[T], s : Slice[T], b : openarray[T]) =
     let minL = min(L, b.len)
     for i in 0 .. minL: self.data[i+s.a] = b[i]
 
-iterator items[T:SomeNumber](self : symseq[T]) : T =
-    for i in 0..self.len:
-        yield self[i]
-
 proc len*[T:SomeNumber](self: symseq[T]): uint64 {.inline.} = self.len
 
 iterator items*[T:SomeNumber](self : symseq[T]) : T =
@@ -265,6 +261,9 @@ proc fence*() =
 
 proc quiet*() =
     bindings.quiet()
+
+proc barrier*() =
+    bindings.barrier_all()
 
 template sosBlock*(body : untyped) =
     bindings.ini()

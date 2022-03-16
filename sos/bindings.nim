@@ -12,11 +12,25 @@ import std/macros
 
 type Team* {.importc: "shmem_team_t", header: "<mpp/shmem-def.h>".} = object
 type Context* {.importc: "shmem_context_t", header: "<shmem.h>".} = object
+type Config* {.importc: "shmem_config_t", header: "<shmem.h>".} = object
 
 {.emit: """extern shmem_team_t SHMEM_TEAM_WORLD; extern shmem_team_t SHMEM_TEAM_SHARED;""".}
 
 var TEAM_WORLD* {.importc: "SHMEM_TEAM_WORLD", header: "<shmem.h>".} : Team
 var TEAM_SHARED* {.importc: "SHMEM_TEAM_SHARED", header: "<shmem.h>".} : Team
+
+proc my_pe*(team : Team) : int {.importc: "shmem_team_my_pe", header : "<shmem.h>".}
+proc n_pes*(team : Team) : int {.importc: "shmem_team_n_pes", header : "<shmem.h>".}
+
+proc translate_pe*(src_team : Team, src_pe : int, dst_team : Team) : int {.importc: "shmem_team_translate_pe", header : "<shmem.h>".}
+proc split_strided*(par_team : Team, strt : int, stride : int, size : int, config : Config, config_mask : int, new_team : var Team) : int {.importc: "shmem_team_split_strided", header : "<shmem.h>".}
+proc split_2d*(par_team : Team, xrng: int, xaxis_config : Config, x_mask : int, xteam : var Team, yaxis_config : Config, y_mask : int, yteam : var Team) : int {.importc: "shmem_team_split_2d", header : "<shmem.h>".}
+proc destroy*(team : var Team) {.importc: "shmem_team_destroy", header : "<shmem.h>".}
+
+proc create(ctx : var Context, options : int) : int {.importc: "shmem_ctx_create", header : "<shmem.h>".}
+proc create(team : Team, ctx : var Context, options : int) : int {.importc: "shmem_ctx_create", header : "<shmem.h>".}
+proc destroy(ctx : var Context) : int {.importc: "shmem_ctx_destroy", header : "<shmem.h>".}
+proc get(ctx : Context, team : var Team) : int {.importc: "shmem_ctx_get_team", header : "<shmem.h>".}
 
 proc ini*() {.importc: "shmem_init", header: "<shmem.h>".}
 proc fin*() {.importc: "shmem_finalize", header: "<shmem.h>".}
@@ -84,8 +98,7 @@ macro nbget*(dst : ptr openarray[typed], src : ptr UncheckedArray[typed], nelems
     result = newStmtList()
     result.add( bindSym"nbget", dst, src )
 
-
-proc sync*() : int {.importc: "shmem_sync", header: "<shmem.h>".}
+proc sync_all*() : int {.importc: "shmem_sync_all", header: "<shmem.h>".}
 proc barrier_all*() : int {.importc: "barrier_all", header: "<shmem.h>".}
 
 proc min_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
