@@ -48,7 +48,7 @@ as the shared point of reference. The process that contains partition 'B' can 'p
 Sequence 'S' as a shared point of reference. Symmetric Sequence operations are single-sided. PE 0 receives no notifications in the
 event partition 'A' is modified due to a communication operation.
 
-Users are required to define the size of each partition when creating Symmetric Sequences. Calling the constructor for `newSymSeq[int](100)`
+Users are required to define the size of each partition when creating Symmetric Sequences. Calling the constructor `newSymSeq[int](100)`
 for a 32 node program run will create a Symmetric Sequence with 32 partitions, each partition being 100 integers in type and length.
 A convenience function called `partitionSizer` is provided to calculate a partition size given the global number of elements that need
 to be stored. If a user needs a Symmetric Sequence stored on 32 nodes for 3200 integers, `partitionSizer` will perform the simple
