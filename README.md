@@ -10,7 +10,7 @@ memory.
 
 `nim-sos` provides a *symmetric sequence type*. Symmetric sequences are an extension to the existing [Nim sequence type](https://nim-lang.org/docs/system.html#seq)
 that wrap distributed symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types.
-Symmetric sequences provide element-access, slice, iterator, and partitioning support. Symmetric sequences cannot be appended to as this functionality breaks the symmetry property.
+Symmetric sequences provide element-access, slice, iterator, and partitioning support. Symmetric sequences cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
 
 This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks.
 Use of the `sosBlock` feature wraps the users code with the proper `shmem_init` and `shmem_finalize` calls.
