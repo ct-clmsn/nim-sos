@@ -39,8 +39,8 @@ sosBlock:
     get(c, b, 1)
     c.get(b, 1)
 
-    c.put(b, 1)
-    c.get(b, 1)
+    c.put(b, 1) # put c into b
+    c.get(b, 1) # get c from b
 
     put(blocking, c, b, 1)
     get(blocking, c, b, 1)
