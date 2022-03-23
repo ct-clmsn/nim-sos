@@ -84,7 +84,7 @@ Consider the Symmetric array 'S' that is created in an SPMD program running on 2
 
 Users are required to define the size of each partition when creating Symmetric array. Calling the constructor `newSymArray[int](100)` for a 32 node program run will create a Symmetric array with 32 partitions, each partition being 100 integers in type and length. A convenience function called `partitioner` is provided to calculate a partition size given the global number of elements that need to be stored. If a user needs a Symmetric array stored on 32 nodes for 3200 integers, `partitioner` will perform the simple calculation and return 100 integers for each partition.
 
-# What is a *Symmetric Scalar*?
+# What is the *Symmetric Scalar*?
 
 Similar to the symmetric array, except for scalar values.
 
