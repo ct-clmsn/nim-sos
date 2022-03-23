@@ -10,7 +10,7 @@ memory.
 
 `nim-sos` provides a *symmetric array type*. Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types) that wrap distributed symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
 
-Support for Symmetric scalar values is provided. Users should use the following types within the `sosSymmetricScalars` block, as described next in this document.
+Support for Symmetric scalar values is provided. Users have to declare the following types within the `sosSymmetricScalars` block in order to exercise symmetric scalar support.
 
 * symint, symint8, symint16, symint32, symint64
 * symuint, symuint8, symuint16, symuint32, symuint64
