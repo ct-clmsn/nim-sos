@@ -61,7 +61,7 @@ sosBlock:
 New users are encouraged to review the OpenSHMEM specification [here](http://openshmem.org/site/Specification). Programs
 implemented using `nim-sos` will require use of the [SPMD style](https://en.wikipedia.org/wiki/SPMD).
 
-# What is a *Symmetric Array*?
+# What is the *Symmetric Array*?
 
 `nim-sos` provides a *symmetric* version of `array` data types in the tradition of [Fortran Coarrays](https://en.wikipedia.org/wiki/Coarray_Fortran). Symmetric arrays, instantiated by processing elements (PEs[1]) running in SPMD, create a global sequence partitioned across the available PEs. Symmetric arrays consist of globally addressable partitions. Users can `get` from and `put` into a remote partition of the symmetric array.
 
