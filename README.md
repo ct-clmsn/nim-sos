@@ -27,12 +27,12 @@ sosSymmetricScalars:
       d : symfloat
 ```
 
-All Symmetric scalars have the following methods:
+Symmetric scalars do not support the following operators `+`, `-`, `*`, `=`. Procedures have been implemented to provide support for these operators. All Symmetric scalars have the following methods:
 
-* `add` : add (sum)
-* `sub` : subtract (difference)
-* `mul` : multiply
-* `sto` : store
+* `add` : add (sum, `+`)
+* `sub` : subtract (difference, `-`)
+* `mul` : multiply (`*`)
+* `sto` : store (`=`)
 
 Symmetric scalar integers have the following additional operators:
 
