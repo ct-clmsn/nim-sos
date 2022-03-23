@@ -7,8 +7,8 @@
 import ../sos/sos
 
 sosBlock:
-    var a = newSymSeq[int]([1,2,3,4,5])
-    var b = newSymSeq[int](a.len)
+    var a = newSymArray[int]([1,2,3,4,5])
+    var b = newSymArray[int](a.len)
 
     # pick an op to reduce
     #
