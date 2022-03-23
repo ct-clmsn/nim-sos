@@ -355,6 +355,9 @@ template symoperators(typa : typedesc, typb:typedesc) =
    proc sto*(x:typa, y:typb) =
       cast[ptr typb](x)[] = y
 
+   proc read*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[]
+
 template isymoperators(typa : typedesc, typb:typedesc) =
    proc `div`*(x:typa, y:typb) : typb =
       result = cast[ptr typb](x)[] div y
