@@ -100,7 +100,7 @@ Similar to the symmetric array, except for scalar values.
         ---------------------------
 ```
 
-The scalar value 'S' is partitioned across 2 PEs. PE 0 has a scalar value 'A', PE 1 has a scalar value 'B'. PE 0 can access 'B' on PE 1 using the 'S' scalar as a point of reference. PE 1 can access 'A' on PE 0 using the 'S' scalar as a point of reference.
+The scalar value 'S' is partitioned across 2 PEs. PE 0 has a scalar value 'A'. PE 1 has a scalar value 'B'. PE 0 can access 'B' on PE 1 using the 'S' scalar as a point of reference. PE 1 can access 'A' on PE 0 using the 'S' scalar as a point of reference.
 
 ### Install
 
