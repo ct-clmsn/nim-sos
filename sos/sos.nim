@@ -85,6 +85,18 @@ proc `=sink`*[T:SomeNumber](a: var symarray[T], b: symarray[T]) =
     a.len = b.len
     a.data = b.data
 
+proc `=copy`*[T:SomeNumber](a: var symarray[T], b: symarray[T]) =
+   if a.data == b.data: return
+   if a.len != b.len:
+      error("unable to copy symarray, a.len != b.len")
+   else:
+      `=destroy`(a)
+      wasMoved(a)
+      a.len = b.len
+      a.owned = b.owned
+      if b.data != nil:
+         for i in 0..<a.len: a.data[i] = b.data[i]
+    
 proc `[]`*[T:SomeNumber](self:symarray[T], i: Natural): lent T =
     ## return a value at position 'i'
     ##
