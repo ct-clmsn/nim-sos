@@ -4,19 +4,19 @@
 <!--   file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)        -->
 # [nim-sos - Nim Sandia OpenSHMEM](https://github.com/ct-clmsn/nim-sos)
 
-`nim-sos` wraps the existing [SOS](https://github.com/Sandia-OpenSHMEM/SOS) OpenSHMEM library implemented by Sandia National
-Laboratory. `nim-sos` provides the [Nim](https://nim-lang.org) programming language support for distributed symmetric shared
-memory.
+`nim-sos` wraps the existing [SOS](https://github.com/Sandia-OpenSHMEM/SOS) OpenSHMEM library implemented by Sandia National Laboratory. `nim-sos` provides the [Nim](https://nim-lang.org) programming language support for distributed symmetric shared memory.
 
-`nim-sos` provides a *symmetric array type*. Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types) that wrap distributed symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
+`nim-sos` provides a *symmetric array type* and a *symmetric scalar type*.
 
-Support for Symmetric scalar values is provided. Users have to declare the following types within the `sosSymmetricScalars` block in order to exercise symmetric scalar support.
+Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types) that wrap distributed symmetric memory allocations. Symmetric arrays only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
+
+Symmetric scalar values are declared using the following types within the `sosSymmetricScalars` block. The `sosSymmetricScalars` block is used to exercise symmetric scalar support.
 
 * `symint`, `symint8`, `symint16`, `symint32`, `symint64`
 * `symuint`, `symuint8`, `symuint16`, `symuint32`, `symuint64`
 * `symfloat`, `symfloat32`, `symfloat64`
 
-This library provides a `sosSymmetricScalars`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim scalars of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymmetricScalars` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymmetricScalars` block is provided below:
+This library provides `sosSymmetricScalars`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim scalars of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymmetricScalars` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymmetricScalars` block is provided below:
 
 ```
 sosSymmetricScalars:

@@ -4,29 +4,234 @@
 #  Distributed under the Boost Software License, Version 1.0. *(See accompanying
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
+{.deadCodeElim: on.}
 import ./bindings
 import std/math
 import std/strutils
 import std/hashes
 import macros
 
-let WORLD* = bindings.TEAM_WORLD 
-let SHARED* = bindings.TEAM_SHARED
+type symint* = ptr int
+type symint8* = ptr int8
+type symint16* = ptr int16
+type symint32* = ptr int32
+type symint64* = ptr int64
 
-proc ini*() =
-    bindings.ini()
+type symuint* = ptr uint
+type symuint8* = ptr uint8
+type symuint16* = ptr uint16
+type symuint32* = ptr uint32
+type symuint64* = ptr uint64
 
-proc fin*() =
-    bindings.fin()
+type symfloat* = ptr float
+type symfloat32* = ptr float32
+type symfloat64* = ptr float64
 
-proc npes() : uint32 =
-    result = bindings.n_pes()
+type SomeSymmetricInt* = symint | symint8 | symint16 | symint32 | symint64
+type SomeSymmetricUInt* = symuint | symuint8 | symuint16 | symuint32 | symuint64
+type SomeSymmetricFloat* = symfloat | symfloat32 | symfloat64
 
-proc mype() : uint32 =
-    result = bindings.my_pe()
+type SomeSymmetricNumber* = SomeSymmetricInt | SomeSymmetricUInt | SomeSymmetricFloat
 
-proc partitioner(global_nelems : int) : int =
-    return int(ceil(float64(global_nelems) / float64(bindings.n_pes())))
+converter toStr*(x : symint) : string =
+   result = cast[ptr int](x)[].intToStr
+
+converter toStr*(x : symint8) : string =
+   let l = cast[ptr int8](x)[]
+   result = $l
+
+converter toStr*(x : symint16) : string =
+   let l = cast[ptr int16](x)[]
+   result = $l
+
+converter toStr*(x : symint32) : string =
+   let l = cast[ptr int32](x)[]
+   result = $l
+
+converter toStr*(x : symint64) : string =
+   let l = cast[ptr int64](x)[]
+   result = $l
+
+converter toStr*(x : symuint) : string =
+   result = cast[ptr int](x)[].intToStr
+
+converter toStr*(x : symuint8) : string =
+   let l = cast[ptr int8](x)[]
+   result = $l
+
+converter toStr*(x : symuint16) : string =
+   let l = cast[ptr int16](x)[]
+   result = $l
+
+converter toStr*(x : symuint32) : string =
+   let l = cast[ptr int32](x)[]
+   result = $l
+
+converter toStr*(x : symuint64) : string =
+   let l = cast[ptr int64](x)[]
+   result = $l
+
+converter toStr*(x : symfloat) : string =
+   var l = cast[ptr float](x)[]
+   result = $l
+
+converter toStr*(x : symfloat32) : string =
+   var l = cast[ptr float32](x)[]
+   result = $l
+
+template symoperators(typa : typedesc, typb:typedesc) =
+   proc add*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] + y
+
+   proc sub*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] - y
+
+   proc mul*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] * y
+
+   proc sto*(x:typa, y:typb) =
+      cast[ptr typb](x)[] = y
+
+   proc read*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[]
+
+template isymoperators(typa : typedesc, typb:typedesc) =
+   proc `div`*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] div y
+
+   proc `mod`*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] mod y
+
+template fsymoperators(typa : typedesc, typb:typedesc) =
+   proc `/`*(x: typa, y:typb) : typb=
+      result = cast[ptr typb](x)[] / y
+
+   proc `div`*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] / y
+      
+symoperators(symint, int)
+symoperators(symint8, int8)
+symoperators(symint16, int16)
+symoperators(symint32, int32)
+symoperators(symint64, int64)
+
+symoperators(symuint, uint)
+symoperators(symuint8, uint8)
+symoperators(symuint16, uint16)
+symoperators(symuint32, uint32)
+symoperators(symuint64, uint64)
+
+isymoperators(symint, int)
+isymoperators(symint8, int8)
+isymoperators(symint16, int16)
+isymoperators(symint32, int32)
+isymoperators(symint64, int64)
+
+isymoperators(symuint, uint)
+isymoperators(symuint8, uint8)
+isymoperators(symuint16, uint16)
+isymoperators(symuint32, uint32)
+isymoperators(symuint64, uint64)
+
+symoperators(symfloat, float)
+symoperators(symfloat32, float32)
+symoperators(symfloat64, float64)
+
+fsymoperators(symfloat, float)
+fsymoperators(symfloat32, float32)
+fsymoperators(symfloat64, float64)
+
+macro sosSymmetricScalars*(body : untyped) : untyped =
+   # sosSymmetricVars:
+   #    var a : int
+   #    var b : float
+   #    var
+   #       cee : int
+   #       d : float
+   #
+   # cee = 4
+   # echo "value", cee
+   #
+   # var dee = 1
+   # var eff = 2
+   # echo dee
+   # echo eff
+   #
+   # let types : seq[string] = @["int", "int8", "int16", "int32", "int64", "float", "float32", "float64", "uint", "uint8", "uint16", "uint32"]
+   #
+   if body.kind != nnkStmtList:
+        error("sosStatic expects nnkBlockStmt")
+
+   result = newStmtList()
+
+   for child in body:
+      if child.kind == nnkVarSection:
+         for c in child:
+            # c[0] = variable name
+            # c[1] = variable type
+            #
+            if c[1].kind != nnkEmpty:
+               let varname : string = c[0].strVal
+               let typename : string = c[1].strVal
+               #var ctype : string 
+               var nimtype : string
+               case typename:
+                  of "symint":
+                     #ctype = "int"
+                     nimtype = "int"
+                  of "symint8":
+                     #ctype = "int"
+                     nimtype = "int8"
+                  of "symint16":
+                     #ctype = "int"
+                     nimtype = "int16"
+                  of "symint32":
+                     #ctype = "int"
+                     nimtype = "int32"
+                  of "symint64":
+                     #ctype = "int64_t"
+                     nimtype = "int64"
+                  of "symuint":
+                     #ctype = "unsigned int"
+                     nimtype = "uint"
+                  of "symuint8":
+                     #ctype = "uint8_t"
+                     nimtype = "uint8"
+                  of "symuint16":
+                     #ctype = "uint16_t"
+                     nimtype = "uint16"
+                  of "symuint32":
+                     #ctype = "uint32_t"
+                     nimtype = "uint32"
+                  of "symuint64":
+                     #ctype = "uint64_t"
+                     nimtype = "uint64"
+                  of "symfloat":
+                     #ctype = "float"
+                     nimtype = "float"
+                  of "symfloat32":
+                     #ctype = "float"
+                     nimtype = "float32"
+                  of "symfloat64":
+                     #ctype = "double"
+                     nimtype = "float64"
+                  else:
+                     error("***sosStatic*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
+
+               # create a 'shadow' variable that is annotated to be static
+               # (placed in the underlying C program's data segment); to do
+               # this, hash the variable's name, create a new variable that
+               # has the name `variablenameVariableHashValueVariableName`;
+               # the user's provided variable `symscalar` is an address to
+               # this 'shadow' variable
+               #
+               let pragmaStr : string = " {.codegenDecl: \"static $# $# \" .}"
+               let varnamehashstr : string = intToStr(hash(varname))
+               let varnamehashvar : string = varname & varnamehashstr & varname
+               let fullStr : string = "var " & varnamehashvar & pragmaStr & " : " & nimtype
+               let symfullStr : string = "var " & varname & " : " & typename & " = unsafeAddr(" & varnamehashvar & ")"
+               result.add( parseStmt(fullStr) )
+               result.add( parseStmt(symfullStr) )
 
 type symarray*[T : SomeNumber] = object
     ## a symarrayuence type for SomeNumber values;
@@ -174,6 +379,26 @@ proc distribute*[T : SomeNumber](src : symarray[T], num : Positive, spread=true)
             result[i].owned = false
             first = last    
 
+type SomeSymmetric* = SomeSymmetricNumber | symarray[SomeNumber]
+
+let WORLD* = bindings.TEAM_WORLD
+let SHARED* = bindings.TEAM_SHARED
+
+proc ini*() =
+    bindings.ini()
+
+proc fin*() =
+    bindings.fin()
+
+proc npes() : uint32 =
+    result = bindings.n_pes()
+
+proc mype() : uint32 =
+    result = bindings.my_pe()
+
+proc partitioner(global_nelems : int) : int =
+    return int(ceil(float64(global_nelems) / float64(bindings.n_pes())))
+
 proc put*[T : SomeNumber](src : var openarray[T], dst : symarray[T], pe : int) =
     ## synchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
@@ -206,10 +431,6 @@ proc nbget*[T : SomeNumber](dst : var openarray[T], src : symarray[T], pe : int)
     ## 
     bindings.nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
 
-proc nbget*[T : SomeNumber](self : symarray[T], pe : int) : openarray[T] =
-    result.setLen(self.len)
-    bindings.get(result, self, pe)
-
 type ModeKind* = enum
     blocking,
     nonblocking
@@ -220,6 +441,36 @@ proc put*[T : SomeNumber](mk : ModeKind, src : var openarray[T], dst : symarray[
         put(src, dst, pe)
     of nonblocking:
         nbput(src, dst, pe)
+
+template sput(typa : typedesc , typb: typedesc) =
+    proc put*[T : typa, F : typb](src : var T, dst : F, pe : int) =
+        bindings.put(dst, src.addr, T.sizeof * src.len, pe)
+
+    proc nbput*[T : typa, F : typb](src : var T, dst : F, pe : int) =
+        bindings.nbput(dst, src.addr, T.sizeof * src.len, pe)
+
+    proc put*[T : typa, F : typb](mk : ModeKind, src : var T, dst : F, pe : int) =
+        case mk:
+        of blocking:
+            put(src, dst, pe)
+        of nonblocking:
+            nbput(src, dst, pe)
+
+sput(int, symint)
+sput(int8, symint8)
+sput(int16, symint16)
+sput(int32, symint32)
+sput(int64, symint64)
+
+sput(uint, symuint)
+sput(uint8, symuint8)
+sput(uint16, symuint16)
+sput(uint64, symuint64)
+sput(uint64, symuint64)
+
+sput(float, symfloat)
+sput(float32, symfloat32)
+sput(float64, symfloat64)
 
 proc get*[T : SomeNumber](mk : ModeKind, dst : var openarray[T], src : symarray[T], pe : int) =
     case mk:
@@ -235,6 +486,42 @@ proc get*[T : SomeNumber](self : symarray[T], mk : ModeKind, pe : int) : openarr
 proc get*[T : SomeNumber](mk : ModeKind, self : symarray[T], pe : int) : openarray[T] =
     result.setLen(self.len)
     get(result, self, pe)
+
+template sget(typa : typedesc , typb: typedesc) =
+    proc get*[T : typa, F : typb](self : T, pe : int) : F =
+        bindings.get(result.addr, self, pe)
+
+    proc nbget*[T : typa, F : typb](self : T, pe : int) : F =
+        bindings.nbget(result.addr, self, pe)
+
+    proc get*[T : typa, F : typb](mk : ModeKind, src : var T, pe : int) : F =
+        case mk:
+        of blocking:
+            bindings.get(result.addr, src, pe)
+        of nonblocking:
+            bindings.nbget(result.addr, src, pe)
+
+    proc get*[T : typa, F : typb](self : T, mk : ModeKind, pe : int) : F =
+        bindings.get(result.addr, self, pe)
+
+    proc get*[T : typa, F : typb](mk : ModeKind, self : T, pe : int) : F =
+        bindings.get(result.addr, self, pe)
+
+sget(symint, int)
+sget(symint8, int8)
+sget(symint16, int16)
+sget(symint32, int32)
+sget(symint64, int64)
+
+sget(symuint, uint)
+sget(symuint8, uint8)
+sget(symuint16, uint16)
+sget(symuint32, uint32)
+sget(symuint64, uint64)
+
+sget(symfloat, float)
+sget(symfloat32, float32)
+sget(symfloat64, float64)
 
 type ReductionKind* = enum
     minop,
@@ -271,6 +558,40 @@ proc broadcast*[T:SomeNumber](team : Team, dst : symarray[T], src : symarray[T],
 proc alltoall*[T:SomeNumber](team : Team, dst : symarray[T], src : symarray[T]) : int =
     result = bindings.alltoall(team, dst.data, src, dst.len)
 
+template scollectives(typa:typedesc, typb:typedesc) =
+    proc reduce*(rk : ReductionKind, team : Team, dst : typa, src : typa ) : typb =
+        case rk:
+        of minop:
+            result = bindings.min_reduce(team, dst, src, 1)
+        of maxop:
+            result = bindings.max_reduce(team, dst, src, 1)
+        of sumop:
+            result = bindings.sum_reduce(team, dst, src, 1)
+        of prodop:
+            result = bindings.prod_reduce(team, dst, src, 1)
+
+    proc min*(team : Team, dst : typa, src : typa) : typb =
+        result = reduce(minop, team, dst, src)
+
+    proc max*(team : Team, dst : typa, src : typa) : typb =
+        result = reduce(maxop, team, dst, src)
+
+    proc sum*(team : Team, dst : typa, src : typa) : typb =
+        result = reduce(sumop, team, dst, src)
+
+    proc prod*(team : Team, dst : typa, src : typa) : typb =
+        result = reduce(prodop, team, dst, src)
+
+    proc broadcast*(team : Team, dst : typa, src : typa, root: int) : int =
+        result = bindings.broadcast(team, dst, src, 1, root)
+
+    proc alltoall*(team : Team, dst : typa, src : typa) : int =
+        result = bindings.alltoall(team, dst, src, 1)
+
+scollectives(SomeSymmetricInt, SomeInteger)
+scollectives(SomeSymmetricUInt, SomeUnsignedInt)
+scollectives(SomeSymmetricFloat, SomeFloat)
+
 proc fence*() =
     bindings.fence()
 
@@ -285,218 +606,3 @@ template sosBlock*(body : untyped) =
     block:
         body
     bindings.fin()
-
-type symint* = ptr int
-type symint8* = ptr int8
-type symint16* = ptr int16
-type symint32* = ptr int32
-type symint64* = ptr int64
-
-type symuint* = ptr uint
-type symuint8* = ptr uint8
-type symuint16* = ptr uint16
-type symuint32* = ptr uint32
-type symuint64* = ptr uint64
-
-type symfloat* = ptr float
-type symfloat32* = ptr float32
-type symfloat64* = ptr float64
-
-type SymmetricInt* = symint | symint8 | symint16 | symint32 | symint64
-type SymmetricUInt* = symuint | symuint8 | symuint16 | symuint32 | symuint64
-type SymmetricFloat* = symfloat | symfloat32 | symfloat64
-
-type SymmetricNumber* = SymmetricInt | SymmetricUInt | SymmetricFloat
-
-converter toStr*(x : symint) : string =
-   result = cast[ptr int](x)[].intToStr
-
-converter toStr*(x : symint8) : string =
-   let l = cast[ptr int8](x)[]
-   result = $l
-
-converter toStr*(x : symint16) : string =
-   let l = cast[ptr int16](x)[]
-   result = $l
-
-converter toStr*(x : symint32) : string =
-   let l = cast[ptr int32](x)[]
-   result = $l
-
-converter toStr*(x : symint64) : string =
-   let l = cast[ptr int64](x)[]
-   result = $l
-
-converter toStr*(x : symuint) : string =
-   result = cast[ptr int](x)[].intToStr
-
-converter toStr*(x : symuint8) : string =
-   let l = cast[ptr int8](x)[]
-   result = $l
-
-converter toStr*(x : symuint16) : string =
-   let l = cast[ptr int16](x)[]
-   result = $l
-
-converter toStr*(x : symuint32) : string =
-   let l = cast[ptr int32](x)[]
-   result = $l
-
-converter toStr*(x : symuint64) : string =
-   let l = cast[ptr int64](x)[]
-   result = $l
-
-converter toStr*(x : symfloat) : string =
-   var l = cast[ptr float](x)[]
-   result = $l
-
-converter toStr*(x : symfloat32) : string =
-   var l = cast[ptr float32](x)[]
-   result = $l
-
-template symoperators(typa : typedesc, typb:typedesc) =
-   proc add*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] + y
-
-   proc sub*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] - y
-
-   proc mul*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] * y
-
-   proc sto*(x:typa, y:typb) =
-      cast[ptr typb](x)[] = y
-
-   proc read*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[]
-
-template isymoperators(typa : typedesc, typb:typedesc) =
-   proc `div`*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] div y
-
-   proc `mod`*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] mod y
-
-template fsymoperators(typa : typedesc, typb:typedesc) =
-   proc `/`*(x: typa, y:typb) : typb=
-      result = cast[ptr typb](x)[] / y
-
-   proc `div`*(x:typa, y:typb) : typb =
-      result = cast[ptr typb](x)[] / y
-      
-symoperators(symint, int)
-symoperators(symint8, int8)
-symoperators(symint16, int16)
-symoperators(symint32, int32)
-symoperators(symint64, int64)
-
-symoperators(symuint, uint)
-symoperators(symuint8, uint8)
-symoperators(symuint16, uint16)
-symoperators(symuint32, uint32)
-symoperators(symuint64, uint64)
-
-isymoperators(symint, int)
-isymoperators(symint8, int8)
-isymoperators(symint16, int16)
-isymoperators(symint32, int32)
-isymoperators(symint64, int64)
-
-isymoperators(symuint, uint)
-isymoperators(symuint8, uint8)
-isymoperators(symuint16, uint16)
-isymoperators(symuint32, uint32)
-isymoperators(symuint64, uint64)
-
-symoperators(symfloat, float)
-symoperators(symfloat32, float32)
-symoperators(symfloat64, float64)
-
-fsymoperators(symfloat, float)
-fsymoperators(symfloat32, float32)
-fsymoperators(symfloat64, float64)
-
-macro sosSymmetricScalars*(body : untyped) : untyped =
-   # sosSymmetricVars:
-   #    var a : int
-   #    var b : float
-   #    var
-   #       cee : int
-   #       d : float
-   #
-   # cee = 4
-   # echo "value", cee
-   #
-   # var dee = 1
-   # var eff = 2
-   # echo dee
-   # echo eff
-   #
-   # let types : seq[string] = @["int", "int8", "int16", "int32", "int64", "float", "float32", "float64", "uint", "uint8", "uint16", "uint32"]
-   #
-   if body.kind != nnkStmtList:
-        error("sosStatic expects nnkBlockStmt")
-
-   result = newStmtList()
-
-   for child in body:
-      if child.kind == nnkVarSection:
-         for c in child:
-            # c[0] = variable name
-            # c[1] = variable type
-            #
-            if c[1].kind != nnkEmpty:
-               let varname : string = c[0].strVal
-               let typename : string = c[1].strVal
-               var ctype : string
-               var nimtype : string
-               case typename:
-                  of "symint":
-                     ctype = "int"
-                     nimtype = "int"
-                  of "symint8":
-                     ctype = "int"
-                     nimtype = "int8"
-                  of "symint16":
-                     ctype = "int"
-                     nimtype = "int16"
-                  of "symint32":
-                     ctype = "int"
-                     nimtype = "int32"
-                  of "symint64":
-                     ctype = "int64_t"
-                     nimtype = "int64"
-                  of "symuint":
-                     ctype = "unsigned int"
-                     nimtype = "uint"
-                  of "symuint8":
-                     ctype = "uint8_t"
-                     nimtype = "uint8"
-                  of "symuint16":
-                     ctype = "uint16_t"
-                     nimtype = "uint16"
-                  of "symuint32":
-                     ctype = "uint32_t"
-                     nimtype = "uint32"
-                  of "symuint64":
-                     ctype = "uint64_t"
-                     nimtype = "uint64"
-                  of "symfloat":
-                     ctype = "float"
-                     nimtype = "float"
-                  of "symfloat32":
-                     ctype = "float"
-                     nimtype = "float32"
-                  of "symfloat64":
-                     ctype = "double"
-                     nimtype = "float64"
-                  else:
-                     error("***sosStatic*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
-
-               let pragmaStr : string = " {.codegenDecl: \"static $# $# \" .}"
-               let varnamehashstr : string = intToStr(hash(varname))
-               let varnamehashvar : string = varname & varnamehashstr & varname
-               let fullStr : string = "var " & varnamehashvar & pragmaStr & " : " & nimtype
-               let symfullStr : string = "var " & varname & " : " & typename & " = unsafeAddr(" & varnamehashvar & ")"
-               result.add( parseStmt(fullStr) )
-               result.add( parseStmt(symfullStr) )
