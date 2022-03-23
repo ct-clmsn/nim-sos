@@ -398,7 +398,7 @@ fsymoperators(symfloat, float)
 fsymoperators(symfloat32, float32)
 fsymoperators(symfloat64, float64)
 
-macro sosSymmetricVars*(body : untyped) : untyped =
+macro sosSymmetricScalars*(body : untyped) : untyped =
    # sosSymmetricVars:
    #    var a : int
    #    var b : float

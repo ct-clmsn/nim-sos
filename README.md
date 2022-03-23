@@ -10,34 +10,51 @@ memory.
 
 `nim-sos` provides a *symmetric array type*. Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types) that wrap distributed symmetric memory allocations. Symmetric sequences only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
 
-This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks. Use of the `sosBlock` feature wraps the users code with the proper `shmem_init` and `shmem_finalize` calls.
+Support for Symmetric scalar values is provided. Users should use the following types within the `sosSymmetricScalars` block, as described next in this document.
 
-This library provides a `sosSymmetricVars`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim variables of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymmetric Vars` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymmetricVars` block is provided below:
+* symint, symint8, symint16, symint32, symint64
+* symuint, symuint8, symuint16, symuint32, symuint64
+* symfloat, symfloat32, symfloat64
+
+This library provides a `sosSymmetricScalars`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim scalars of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymmetricScalars` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymmetricScalars` block is provided below:
 
 ```
-sosSymmetricVars:
-   var a : int
-   var b : float
+sosSymmetricScalars:
+   var a : symint
+   var b : symfloat
    var
-      cee : int
-      d : float
+      cee : symint
+      d : symfloat
 ```
 
-Symmetric variables have the following methods:
+All Symmetric scalars have the following methods:
 
 * add : add (sum)
 * sub : subtract (difference)
 * mul : multiply
 * sto : store
 
-Symmetric integers have the following additional methods:
+Symmetric scalar integers have the following additional operators:
 
 * div : integer divide
 * mod : integer modulo
 
-Symmetric floats have the following additional methods:
+Symmetric scalar floats have the following additional operator:
 
 * / : floating point divide
+
+This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks. Use of the `sosBlock` feature wraps the users code with the proper `shmem_init` and `shmem_finalize` calls. An example is provided below.
+
+```
+sosBlock:
+    var a = newSymArray[int]([1,2,3,4,5])
+    var b = newSymArray[int](a.len)
+
+    # pick an op to reduce
+    #
+    let rmin = reduce(minop, WORLD, b, a)
+    echo(rmin)
+```
 
 ### Developer Notes
 
@@ -52,6 +69,7 @@ implemented using `nim-sos` will require use of the [SPMD style](https://en.wiki
 
 Consider the Symmetric array 'S' that is created in an SPMD program running on 2 PEs. 'S' spans 2 PEs, or 2 processes residing on the same or a different machine.
 
+```
         ---------------------------
         -            S            -
         -  ++++++++     ++++++++  -
@@ -60,10 +78,15 @@ Consider the Symmetric array 'S' that is created in an SPMD program running on 2
         -  +  A   +     +  B   +  -
         -  ++++++++     ++++++++  -
         ---------------------------
+```
 
 'S' is composed of two partitions, 'A' and 'B'. 'A' resides in the 1st processes memory (PE 0) and 'B' resides in a 2nd processes memory (PE 1). The process that contains partition 'A' can 'get' a copy of the values in partition 'B' using Symmetric array 'S' as the shared point of reference. The process that contains partition 'B' can 'put' values into partition 'A' using the Symmetric array 'S' as a shared point of reference. Symmetric array operations are single-sided. PE 0 receives no notifications in the event partition 'A' is modified due to a communication operation.
 
 Users are required to define the size of each partition when creating Symmetric array. Calling the constructor `newSymArray[int](100)` for a 32 node program run will create a Symmetric array with 32 partitions, each partition being 100 integers in type and length. A convenience function called `partitioner` is provided to calculate a partition size given the global number of elements that need to be stored. If a user needs a Symmetric array stored on 32 nodes for 3200 integers, `partitioner` will perform the simple calculation and return 100 integers for each partition.
+
+# What is a *Symmetric Scalar*?
+
+Similar to the symmetric array, except for scalar values.
 
 ### Install
 
