@@ -68,7 +68,7 @@ implemented using `nim-sos` will require use of the [SPMD style](https://en.wiki
 
 [1] A PE is a program process running in SPMD on a computer or set of computers. Applications running in SPMD can run in a distributed (cluster) or a single machine setting.
 
-Consider the Symmetric array 'S' that is created in an SPMD program running on 2 PEs. 'S' spans 2 PEs, or 2 processes residing on the same or a different machine.
+Consider the Symmetric array `S` that is created in an SPMD program running on 2 PEs. `S` spans 2 PEs, or 2 processes residing on the same or a different machine.
 
 ```
         ---------------------------
@@ -81,7 +81,7 @@ Consider the Symmetric array 'S' that is created in an SPMD program running on 2
         ---------------------------
 ```
 
-'S' is composed of two partitions, 'A' and 'B'. 'A' resides in the 1st processes memory (PE 0) and 'B' resides in a 2nd processes memory (PE 1). The process that contains partition 'A' can 'get' a copy of the values in partition 'B' using Symmetric array 'S' as the shared point of reference. The process that contains partition 'B' can 'put' values into partition 'A' using the Symmetric array 'S' as a shared point of reference. Symmetric array operations are single-sided. PE 0 receives no notifications in the event partition 'A' is modified due to a communication operation.
+`S` is composed of two partitions, `A` and `B`. `A` resides in the 1st processes memory (PE 0) and `B` resides in a 2nd processes memory (PE 1). The process that contains partition `A` can 'get' a copy of the values in partition `B` using Symmetric array `S` as the shared point of reference. The process that contains partition `B` can 'put' values into partition `A` using the Symmetric array `S` as a shared point of reference. Symmetric array operations are single-sided. PE 0 receives no notifications in the event partition `A` is modified due to a communication operation.
 
 Users are required to define the size of each partition when creating Symmetric array. Calling the constructor `newSymArray[int](100)` for a 32 node program run will create a Symmetric array with 32 partitions, each partition being 100 integers in type and length. A convenience function called `partitioner` is provided to calculate a partition size given the global number of elements that need to be stored. If a user needs a Symmetric array stored on 32 nodes for 3200 integers, `partitioner` will perform the simple calculation and return 100 integers for each partition.
 
@@ -100,7 +100,7 @@ Similar to the symmetric array, except for scalar values.
         ---------------------------
 ```
 
-The scalar value 'S' is partitioned across 2 PEs. PE 0 has a scalar value 'A'. PE 1 has a scalar value 'B'. PE 0 can access 'B' on PE 1 using the 'S' scalar as a point of reference. PE 1 can access 'A' on PE 0 using the 'S' scalar as a point of reference.
+The scalar value `S` is partitioned across 2 PEs. PE 0 has a scalar value `A`. PE 1 has a scalar value `B`. PE 0 can access `B` on PE 1 using the `S` scalar as a point of reference. PE 1 can access `A` on PE 0 using the `S` scalar as a point of reference.
 
 ### Install
 
