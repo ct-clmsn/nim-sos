@@ -366,6 +366,9 @@ template fsymoperators(typa : typedesc, typb:typedesc) =
    proc `/`*(x: typa, y:typb) : typb=
       result = cast[ptr typb](x)[] / y
 
+   proc `div`*(x:typa, y:typb) : typb =
+      result = cast[ptr typb](x)[] / y
+      
 symoperators(symint, int)
 symoperators(symint8, int8)
 symoperators(symint16, int16)

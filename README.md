@@ -41,6 +41,7 @@ Symmetric scalar integers have the following additional operators:
 
 Symmetric scalar floats have the following additional operator:
 
+* `div` : integer divide
 * `/` : floating point divide
 
 This library provides a convenient mechanism for implementing OpenSHMEM programs using Nim templates and blocks. Use of the `sosBlock` feature wraps the users code with the proper `shmem_init` and `shmem_finalize` calls. An example is provided below.
