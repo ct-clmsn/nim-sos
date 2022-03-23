@@ -32,8 +32,8 @@ Symmetric scalars do not support the following operators `+`, `-`, `*`, `=`. Pro
 * `add` : add (sum, `+`)
 * `sub` : subtract (difference, `-`)
 * `mul` : multiply (`*`)
-* `sto` : store (`=`); similar to [atomics](https://nim-lang.org/docs/atomics.html)
-* `read` : get the value; similar to [atomics](https://nim-lang.org/docs/atomics.html)
+* `sto` : store into the local value (`=`); similar to [atomics](https://nim-lang.org/docs/atomics.html)
+* `read` : get the local value; similar to [atomics](https://nim-lang.org/docs/atomics.html)
 
 Symmetric scalar integers have the following additional operators:
 
