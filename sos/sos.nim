@@ -535,6 +535,7 @@ proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, s
             result[i].owned = false
             first = last    
 
+#[
 type symindexmatrix*[ AxB : tuple[ R : static[int], C : static[int] ], T : SomeNumber] = tuple[ rows : int, cols : int, data : symptrarr[T] ]
 
 type symmatrix*[T] = object
@@ -555,6 +556,9 @@ type SomeSymmetricMatrix = symmatrix[SomeNumber]
 type SomeSymmetricTensor = symtensor[SomeNumber]
 
 type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray | SomeSymmetricMatrix | SomeSymmetricTensor
+]#
+
+type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray
 
 let WORLD* = bindings.TEAM_WORLD
 let SHARED* = bindings.TEAM_SHARED
