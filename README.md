@@ -43,6 +43,7 @@ This library provides `sosSymScalarDecl`, a [Nim macro](https://nim-lang.org/doc
 
 ```
 sosSymScalarDecl:
+   var z : symscalar[int]
    var a : symint
    var b : symfloat
    var
