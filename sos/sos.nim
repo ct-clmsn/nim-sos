@@ -558,9 +558,11 @@ type SomeSymmetricTensor = symtensor[SomeNumber]
 type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray | SomeSymmetricMatrix | SomeSymmetricTensor
 ]#
 
+### beg -> block to remove when matrix, and tensor are ready
 type SomeSymmetricArray = symarray[SomeNumber]
 
 type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray
+### end -> block to remove when matrix, and tensor are ready
 
 let WORLD* = bindings.TEAM_WORLD
 let SHARED* = bindings.TEAM_SHARED
