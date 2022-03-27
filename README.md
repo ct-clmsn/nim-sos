@@ -10,6 +10,26 @@
 
 Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types) that wrap distributed symmetric memory allocations. Symmetric arrays only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property.
 
+Symmetric arrays can be instantiated either at compile-time or at runtime. Compile-time (static) symmetric arrays are called `symmetric indexed arrays`. Runtime (dynamic) symmetric arrays are called `symmetric arrays`. The naming convention is used to differentiate the memory allocation used to instatiate the array. To create a compile-time symmetric array, utilize the following type `symindexarray[A, B]` where `A` is an integer value denoting the size of the array to create at compile time and `B` is of `SomeNumber` type. Creation of the compile-time array should be done in the `sosSymIndexArrayDecl` code block as follows:
+
+```
+sosSymIndexArrayDecl:
+   var a : symindexarray[100, int]
+   var b : symindexarray[500, float64]
+```
+
+The `sosSymIndexArrayDecl` block above creates 2 arrays at compile time. The array `a` is of type `int` and is 100 elements. The array `b` is of type `float64` and is 500 elements.
+
+Arrays declared with the `symarray[T:SomeNumber]` type are created at runtime. Users can dynamically or statically size the array with an invocation of the `newSymArray` constructors. `symarray[T:SomeNumber]` should be created inside the scope of an `sosBlock` block.
+
+```
+sosBlock:
+    var a = newSymArray[int]([1,2,3,4,5])
+    var b = newSymArray[int](a.len)
+```
+
+The `sosBlock` block above creates 2 arrays at compile time. The array `a` is of type `int` and is 5 elements with values (1,2,3,4,5). The array `b` is of type `int` and is 5 elements of uninitialized values.
+
 Symmetric scalar values are declared using the following types within the `sosSymmetricScalars` block. The `sosSymmetricScalars` block is used to exercise symmetric scalar support.
 
 * `symint`, `symint8`, `symint16`, `symint32`, `symint64`
