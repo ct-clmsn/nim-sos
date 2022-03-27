@@ -6,6 +6,12 @@
 #
 import ../sos/sos
 
+sosSymmetricScalars:
+    var apple : symint
+
+sosSymIndexArrayDecl:
+    var orange : symarray[2, int]
+
 sosBlock:
     var a = newSymArray[int]([1,2,3,4,5])
     var b = newSymArray[int](a.len)

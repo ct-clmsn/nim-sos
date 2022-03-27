@@ -379,7 +379,160 @@ proc distribute*[T : SomeNumber](src : symarray[T], num : Positive, spread=true)
             result[i].owned = false
             first = last    
 
-type SomeSymmetric* = SomeSymmetricNumber | symarray[SomeNumber]
+type symptrarr[T : SomeNumber] = ptr UncheckedArray[T]
+type symindexarray[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
+
+macro sosSymIndexArrayDecl*(body : untyped) : untyped =
+    if body.kind != nnkStmtList:
+        error("sosStatic expects nnkBlockStmt")
+
+    result = newStmtList()
+
+    for child in body:
+        if child.kind == nnkVarSection:
+            for c in child:
+                # c[0] = variable name
+                # c[1] = variable type
+                #
+                if c[1].kind != nnkEmpty:
+                    let varname : string = c[0].strVal
+                    if c[1].kind == nnkBracketExpr:
+                        if c[1][0].len != 3:
+                            error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not symindexarray")
+
+                        if c[1][0].strVal == "symindexarray":
+                            let nelem : int = int(c[1][1].intVal)
+                            if nelem < 0:
+                                error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s size is < 0")
+
+                            let typename : string = c[1][2].strVal
+                            var ctype : string
+                            case typename:
+                                of "int":
+                                    ctype = "int"
+                                of "int8":
+                                    ctype = "int"
+                                of "int16":
+                                    ctype = "int"
+                                of "int32":
+                                    ctype = "int"
+                                of "int64":
+                                    ctype = "int64_t"
+                                of "uint":
+                                    ctype = "unsigned int"
+                                of "uint8":
+                                    ctype = "uint8_t"
+                                of "uint16":
+                                    ctype = "uint16_t"
+                                of "uint32":
+                                    ctype = "uint32_t"
+                                of "uint64":
+                                    ctype = "uint64_t"
+                                of "float":
+                                    ctype = "float"
+                                of "float32":
+                                    ctype = "float"
+                                of "float64":
+                                    ctype = "double"
+                                else:
+                                    error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
+
+                            # create a 'shadow' variable that is annotated to be static
+                            # (placed in the underlying C program's data segment); to do
+                            # this, hash the variable's name, create a new variable that
+                            # has the name `variablenameVariableHashValueVariableName`;
+                            # the user's provided variable `symscalar` is an address to
+                            # this 'shadow' variable
+                            #
+                            let varnamehashstr : string = intToStr(hash(varname))
+                            let varnamehashvar : string = varname & varnamehashstr & varname
+                            let codegen : string = "static " & ctype & " " & varnamehashvar & " [" & $nelem & "]"
+                            let pragmaStr : string = " {.emit: \"" & codegen & " \" .}"
+                            let symfullStr : string = "var " & varname & " : symindexarray[ " & $nelem & ", " & typename & " ] = ( " & $nelem & ", unsafeAddr( " & varnamehashvar & " )"
+                            #echo pragmaStr, '\n', symfullStr
+                            result.add( parseStmt(pragmaStr) )
+                            result.add( parseStmt(symfullStr) )
+
+proc `[]`*[I, T](self:symindexarray[I, T], i: Natural): lent T =
+    ## return a value at position 'i'
+    ##
+    assert cast[uint64](i) < self.nelem
+    self.data[i]
+
+proc `[]=`*[I, T](self: var symindexarray[I, T]; i: Natural; y: sink T) =
+    ## assign a value at position 'i' equal to
+    ## the value 'y'
+    ##
+    assert i < self.nelem
+    self.data[i] = y
+
+proc `[]`*[I, T](self: var symindexarray[I, T], s : Slice[T]) : seq[T] =
+    assert( ((s.b-s.a) < self.nelem) and s.a > -1 and s.b < self.nelem )
+    let L = abs(s.b-s.a)
+    newSeq(result, L)
+    for i in 0 .. L: result[i] = self.data[i+s.a]
+
+proc `[]=`*[I, T](self: var symindexarray[I, T], s : Slice[T], b : openarray[T]) =
+    assert( (s.a > -1) and (s.b < self.nelem) and ((s.b-s.a) < b.len) )
+    let L = s.b-s.a
+    let minL = min(L, b.len)
+    for i in 0 .. minL: self.data[i+s.a] = b[i]
+
+proc len*[I, T](self: symindexarray[I, T]): uint64 {.inline.} = self.nelem
+
+iterator items*[I, T](self : symindexarray[I, T]) : T =
+    ## iterator over the elements in a symarray
+    ##
+    let rng = 0..<self.nelem
+    for i in rng:
+        yield self.data[i-rng.sp] 
+
+iterator pairs*[I, T](self : symindexarray[I, T]) : T =
+    ## iterator returns pairs (index, value) over elements in a symarray
+    ##
+    let rng = 0..<self.nelem
+    for i in rng.sp..rng.ep:
+        yield (i, self.data[i-rng.sp])
+
+proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, spread=true) : seq[symarray[T]] =
+    ## Splits a symarray[T] into num a sequence of symarray's;
+    ## symarray's do not `own` their data.
+    ##
+    if num < 2:
+        result = @[src]
+        return
+
+    result = newSeq[symindexarray[T]](num)
+
+    var
+        stride = src.len div num
+        first = 0
+        last = 0
+        extra = src.len mod num
+
+    if extra == 0 or spread == false:
+        # Use an algorithm which overcounts the stride and minimizes reading limits.
+        if extra > 0: inc(stride)
+        for i in 0 ..< num:
+            result[i].data = src.data + first
+            result[i].len = min(src.len, first+stride)
+            result[i].owned = false
+            first += stride
+    else:
+        # Use an undercounting algorithm which *adds* the remainder each iteration.
+        for i in 0 ..< num:
+            last = first + stride
+            if extra > 0:
+                extra -= 1
+                inc(last)
+            result[i].data = src.data + first
+            result[i].len = last-first
+            result[i].owned = false
+            first = last    
+
+type SomeSymmetricArray = symarray[SomeNumber]
+
+type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray
 
 let WORLD* = bindings.TEAM_WORLD
 let SHARED* = bindings.TEAM_SHARED
