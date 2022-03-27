@@ -32,16 +32,16 @@ sosBlock:
 
 The `sosBlock` block above creates 2 arrays at compile time. The array `a` is of type `int` and is 5 elements with values (1,2,3,4,5). The array `b` is of type `int` and is 5 elements of uninitialized values.
 
-Symmetric scalar values are declared using the following types within the `sosSymmetricScalars` block. The `sosSymmetricScalars` block is used to exercise symmetric scalar support.
+Symmetric scalar values are declared using the following types within the `sosSymScalarDecl` block. The `sosSymScalarDecl` block is used to exercise symmetric scalar support.
 
 * `symint`, `symint8`, `symint16`, `symint32`, `symint64`
 * `symuint`, `symuint8`, `symuint16`, `symuint32`, `symuint64`
 * `symfloat`, `symfloat32`, `symfloat64`
 
-This library provides `sosSymmetricScalars`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim scalars of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymmetricScalars` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymmetricScalars` block is provided below:
+This library provides `sosSymScalarDecl`, a [Nim macro](https://nim-lang.org/docs/macros.html) that allows Nim scalars of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types to be exposed to the global address space. Users should define `sosSymScalarDecl` prior to utilizing `sosBlock`. An example regarding how to use the `sosSymScalarDecl` block is provided below:
 
 ```
-sosSymmetricScalars:
+sosSymScalarDecl:
    var a : symint
    var b : symfloat
    var

@@ -141,7 +141,7 @@ fsymoperators(symfloat, float)
 fsymoperators(symfloat32, float32)
 fsymoperators(symfloat64, float64)
 
-macro sosSymmetricScalars*(body : untyped) : untyped =
+macro sosSymScalarDecl*(body : untyped) : untyped =
    # sosSymmetricVars:
    #    var a : int
    #    var b : float
@@ -530,9 +530,26 @@ proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, s
             result[i].owned = false
             first = last    
 
-type SomeSymmetricArray = symarray[SomeNumber]
+type symindexmatrix*[ AxB : tuple[ R : static[int], C : static[int] ], T : SomeNumber] = tuple[ rows : int, cols : int, data : symptrarr[T] ]
 
-type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray
+type symmatrix*[T] = object
+    rows : int
+    cols : int
+    owned : bool
+    data : ptr UncheckedArray[T]
+
+type symindextensor*[ indices : static[array[ static[int], int ]], T : SomeNumber] = tuple[ indices : static[array[ static[int], int ]], data : symptrarr[T] ]
+
+type symtensor*[T] = object
+    indices : seq[int]
+    owned : bool
+    data : ptr UncheckedArray[T]
+
+type SomeSymmetricArray = symarray[SomeNumber]
+type SomeSymmetricMatrix = symmatrix[SomeNumber]
+type SomeSymmetricTensor = symtensor[SomeNumber]
+
+type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray | SomeSymmetricMatrix | SomeSymmetricTensor
 
 let WORLD* = bindings.TEAM_WORLD
 let SHARED* = bindings.TEAM_SHARED
