@@ -11,21 +11,23 @@ import std/strutils
 import std/hashes
 import macros
 
-type symint* = ptr int
-type symint8* = ptr int8
-type symint16* = ptr int16
-type symint32* = ptr int32
-type symint64* = ptr int64
+type symscalar*[T:SomeNumber] = ptr T
 
-type symuint* = ptr uint
-type symuint8* = ptr uint8
-type symuint16* = ptr uint16
-type symuint32* = ptr uint32
-type symuint64* = ptr uint64
+type symint* = symscalar[int]
+type symint8* = symscalar[int8]
+type symint16* = symscalar[int16]
+type symint32* = symscalar[int32]
+type symint64* = symscalar[int64]
 
-type symfloat* = ptr float
-type symfloat32* = ptr float32
-type symfloat64* = ptr float64
+type symuint* = symscalar[uint]
+type symuint8* = symscalar[uint8]
+type symuint16* = symscalar[uint16]
+type symuint32* = symscalar[uint32]
+type symuint64* = symscalar[uint64]
+
+type symfloat* = symscalar[float]
+type symfloat32* = symscalar[float32]
+type symfloat64* = symscalar[float64]
 
 type SomeSymmetricInt* = symint | symint8 | symint16 | symint32 | symint64
 type SomeSymmetricUInt* = symuint | symuint8 | symuint16 | symuint32 | symuint64
@@ -78,6 +80,9 @@ converter toStr*(x : symfloat) : string =
 converter toStr*(x : symfloat32) : string =
    var l = cast[ptr float32](x)[]
    result = $l
+
+converter toStr*[T:SomeNumber](x : symscalar[T]) : string =
+    result = $x
 
 template symoperators(typa : typedesc, typb:typedesc) =
    proc add*(x:typa, y:typb) : typb =
