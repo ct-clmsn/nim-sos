@@ -558,6 +558,8 @@ type SomeSymmetricTensor = symtensor[SomeNumber]
 type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray | SomeSymmetricMatrix | SomeSymmetricTensor
 ]#
 
+type SomeSymmetricArray = symarray[SomeNumber]
+
 type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray
 
 let WORLD* = bindings.TEAM_WORLD
