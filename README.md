@@ -20,6 +20,8 @@ sosSymIndexArrayDecl:
 
 The `sosSymIndexArrayDecl` block above creates 2 arrays at compile time. The array `a` is of type `int` and is 100 elements. The array `b` is of type `float64` and is 500 elements.
 
+*Symmetric indexed arrays will not work if defined outside the `sosSymIndexArrayDecl` block!*
+
 Arrays declared with the `symarray[T:SomeNumber]` type are created at runtime. Users can dynamically or statically size the array with an invocation of the `newSymArray` constructors. `symarray[T:SomeNumber]` should be created inside the scope of an `sosBlock` block.
 
 ```
@@ -109,6 +111,8 @@ Consider the Symmetric array `S` that is created in an SPMD program running on 2
 `S` is composed of two partitions, `A` and `B`. `A` resides in the 1st processes memory (PE 0) and `B` resides in a 2nd processes memory (PE 1). The process that contains partition `A` can 'get' a copy of the values in partition `B` using Symmetric array `S` as the shared point of reference. The process that contains partition `B` can 'put' values into partition `A` using the Symmetric array `S` as a shared point of reference. Symmetric array operations are single-sided. PE 0 receives no notifications in the event partition `A` is modified due to a communication operation.
 
 Users are required to define the size of each partition when creating Symmetric array. Calling the constructor `newSymArray[int](100)` for a 32 node program run will create a Symmetric array with 32 partitions, each partition being 100 integers in type and length. A convenience function called `partitioner` is provided to calculate a partition size given the global number of elements that need to be stored. If a user needs a Symmetric array stored on 32 nodes for 3200 integers, `partitioner` will perform the simple calculation and return 100 integers for each partition.
+
+*Symmetric indexed arrays will not work if defined outside the `sosSymIndexArrayDecl` block!*
 
 # What is the *Symmetric Scalar*?
 
