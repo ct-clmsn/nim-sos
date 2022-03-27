@@ -380,7 +380,7 @@ proc distribute*[T : SomeNumber](src : symarray[T], num : Positive, spread=true)
             first = last    
 
 type symptrarr[T : SomeNumber] = ptr UncheckedArray[T]
-type symindexarray[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
+type symindexarray*[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
 
 macro sosSymIndexArrayDecl*(body : untyped) : untyped =
     if body.kind != nnkStmtList:
@@ -453,44 +453,44 @@ macro sosSymIndexArrayDecl*(body : untyped) : untyped =
                             result.add( parseStmt(pragmaStr) )
                             result.add( parseStmt(symfullStr) )
 
+proc len*[I, T](self: symindexarray[I, T]): uint64 {.inline.} = self.nelem
+
 proc `[]`*[I, T](self:symindexarray[I, T], i: Natural): lent T =
     ## return a value at position 'i'
     ##
-    assert cast[uint64](i) < self.nelem
+    assert cast[uint64](i) < self.len
     self.data[i]
 
 proc `[]=`*[I, T](self: var symindexarray[I, T]; i: Natural; y: sink T) =
     ## assign a value at position 'i' equal to
     ## the value 'y'
     ##
-    assert i < self.nelem
+    assert i < self.len
     self.data[i] = y
 
 proc `[]`*[I, T](self: var symindexarray[I, T], s : Slice[T]) : seq[T] =
-    assert( ((s.b-s.a) < self.nelem) and s.a > -1 and s.b < self.nelem )
+    assert( ((s.b-s.a) < self.len) and s.a > -1 and s.b < self.len )
     let L = abs(s.b-s.a)
     newSeq(result, L)
     for i in 0 .. L: result[i] = self.data[i+s.a]
 
 proc `[]=`*[I, T](self: var symindexarray[I, T], s : Slice[T], b : openarray[T]) =
-    assert( (s.a > -1) and (s.b < self.nelem) and ((s.b-s.a) < b.len) )
+    assert( (s.a > -1) and (s.b < self.len) and ((s.b-s.a) < b.len) )
     let L = s.b-s.a
     let minL = min(L, b.len)
     for i in 0 .. minL: self.data[i+s.a] = b[i]
 
-proc len*[I, T](self: symindexarray[I, T]): uint64 {.inline.} = self.nelem
-
 iterator items*[I, T](self : symindexarray[I, T]) : T =
     ## iterator over the elements in a symarray
     ##
-    let rng = 0..<self.nelem
+    let rng = 0..<self.len
     for i in rng:
         yield self.data[i-rng.sp] 
 
 iterator pairs*[I, T](self : symindexarray[I, T]) : T =
     ## iterator returns pairs (index, value) over elements in a symarray
     ##
-    let rng = 0..<self.nelem
+    let rng = 0..<self.len
     for i in rng.sp..rng.ep:
         yield (i, self.data[i-rng.sp])
 
