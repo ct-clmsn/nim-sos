@@ -34,6 +34,7 @@ The `sosBlock` block above creates 2 arrays at compile time. The array `a` is of
 
 Symmetric scalar values are declared using the following types within the `sosSymScalarDecl` block. The `sosSymScalarDecl` block is used to exercise symmetric scalar support.
 
+* `symscalar[T:SomeNumber]`
 * `symint`, `symint8`, `symint16`, `symint32`, `symint64`
 * `symuint`, `symuint8`, `symuint16`, `symuint32`, `symuint64`
 * `symfloat`, `symfloat32`, `symfloat64`
