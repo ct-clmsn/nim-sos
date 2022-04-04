@@ -5,7 +5,8 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 import ../sos/sos
-
+import std/macros
+#[
 sosSymScalarDecl:
     # var apple : symarray[int] # -> this will break
     # var apple : symindexarray[2, int]
@@ -57,3 +58,10 @@ sosBlock:
 
     blocking.put(c, b, 1)
     blocking.get(c, b, 1)
+]#
+
+SymmetricBlock:
+   var a : symint
+   var orange : symindexarray[2, int]
+
+   var b = newSymArray[int]([1,2,3,4,5])
