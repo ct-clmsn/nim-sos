@@ -14,7 +14,7 @@ Symmetric scalars are globally addressable scalar values.
 
 ## Symmetric Block
 
-The `SymmetricBlock` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricBlock` macro is a *one-stop-shop* for most users.
+The `SymmetricBlock` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricBlock` macro is a *one-stop-shop* users. Use of the `SymmetricBlock` is mandatory, the macro finds all symmetric types in a user's program, exposes them to OpenSHMEM, initializes and finalizes OpenSHMEM.
 
 ```
 SymmetricBlock:
