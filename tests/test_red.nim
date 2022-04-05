@@ -6,62 +6,48 @@
 #
 import ../sos/sos
 import std/macros
-#[
-sosSymScalarDecl:
-    # var apple : symarray[int] # -> this will break
-    # var apple : symindexarray[2, int]
-    var apple : symint
-
-sosSymIndexArrayDecl:
-    # var orange : symint        # -> this will break
-    # var orange : symarray[int] # -> this will break
-    var orange : symindexarray[2, int]
-
-sosBlock:
-    var a = newSymArray[int]([1,2,3,4,5])
-    var b = newSymArray[int](a.len)
-
-    # pick an op to reduce
-    #
-    let rmin = reduce(minop, WORLD, b, a)
-    echo(rmin)
-
-    # op can reduce
-    #
-    let mrmin = minop.reduce(WORLD, b, a)
-    echo(mrmin)
-
-    # op can be called
-    #
-    let mmrmin = min(WORLD, b, a)
-    echo(mmrmin)
-
-    # teams can invoke reduction
-    #
-    let rrmin = WORLD.min(b, a)
-    echo(rrmin)
-
-    # puts/gets
-    #
-    var c = newSeq[int](5)
-    put(c, b, 1)
-    c.put(b, 1)
-
-    get(c, b, 1)
-    c.get(b, 1)
-
-    c.put(b, 1) # put c into b
-    c.get(b, 1) # get c from b
-
-    put(blocking, c, b, 1)
-    get(blocking, c, b, 1)
-
-    blocking.put(c, b, 1)
-    blocking.get(c, b, 1)
-]#
 
 SymmetricBlock:
-   var a : symint
+   var apple : symint
    var orange : symindexarray[2, int]
 
-   var b = newSymArray[int]([1,2,3,4,5])
+   var a = newSymArray[int]([1,2,3,4,5])
+   var b = newSymArray[int](a.len)
+
+   # pick an op to reduce
+   #
+   let rmin = reduce(minop, WORLD, b, a)
+   echo(rmin)
+
+   # op can reduce
+   #
+   let mrmin = minop.reduce(WORLD, b, a)
+   echo(mrmin)
+
+   # op can be called
+   #
+   let mmrmin = min(WORLD, b, a)
+   echo(mmrmin)
+
+   # teams can invoke reduction
+   #
+   let rrmin = WORLD.min(b, a)
+   echo(rrmin)
+
+   # puts/gets
+   #
+   var c = newSeq[int](5)
+   put(c, b, 1)
+   c.put(b, 1)
+
+   get(c, b, 1)
+   c.get(b, 1)
+
+   c.put(b, 1) # put c into b
+   c.get(b, 1) # get c from b
+
+   put(blocking, c, b, 1)
+   get(blocking, c, b, 1)
+
+   blocking.put(c, b, 1)
+   blocking.get(c, b, 1)
