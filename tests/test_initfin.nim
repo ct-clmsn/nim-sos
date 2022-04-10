@@ -7,5 +7,5 @@
 import ../sos/bindings
 
 ini()
-echo "init"
+echo "init", ' ' , my_pe(), ' ', n_pes()
 fin()

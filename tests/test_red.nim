@@ -7,7 +7,7 @@
 import ../sos/sos
 import std/macros
 
-SymmetricBlock:
+SymmetricMain:
    var apple : symint
    var orange : symindexarray[2, int]
 

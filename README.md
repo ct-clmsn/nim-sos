@@ -12,12 +12,12 @@ Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.o
 
 Symmetric scalars are globally addressable scalar values.
 
-## Symmetric Block
+## SymmetricMain
 
-The `SymmetricBlock` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricBlock` macro is a *one-stop-shop* users. Use of the `SymmetricBlock` is mandatory, the macro finds all symmetric types in a user's program, exposes them to OpenSHMEM, initializes and finalizes OpenSHMEM.
+The `SymmetricMain` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricMain` macro is a *one-stop-shop* users. *Use of the `SymmetricMain` is mandatory*, the macro finds all symmetric types in a user's program, exposes them to OpenSHMEM, initializes and finalizes OpenSHMEM. The `SymmetricMain` macro can be used as a pragma `{.SymmetricMain.}`.
 
 ```
-SymmetricBlock:
+SymmetricMain:
     var a = newSymArray[int]([1,2,3,4,5])
     var b = newSymArray[int](a.len)
 
@@ -26,6 +26,21 @@ SymmetricBlock:
     let rmin = reduce(minop, WORLD, b, a)
     echo(rmin)
 ```
+
+```
+proc main() {.SymmetricMain.} =
+    var a = newSymArray[int]([1,2,3,4,5])
+    var b = newSymArray[int](a.len)
+
+    # pick an op to reduce
+    #
+    let rmin = reduce(minop, WORLD, b, a)
+    echo(rmin)
+
+main()
+```
+
+
 
 ## Symmetric Arrays
 
@@ -54,7 +69,7 @@ Users are required to define the size of each partition when creating a Symmetri
 Symmetric arrays can be instantiated either at compile-time or at runtime. Compile-time (static) symmetric arrays are called `symmetric indexed arrays`. Runtime (dynamic) symmetric arrays are called `symmetric arrays`. The naming convention is used to differentiate the memory allocation used to instatiate the array. To create a compile-time symmetric array, utilize the following type `symindexarray[A, B]` where `A` is an integer value denoting the size of the array to create at compile time and `B` is of `SomeNumber` type.
 
 ```
-SymmetricBlock:
+SymmetricMain:
    var a : symindexarray[100, int]
    var b : symindexarray[500, float64]
 ```
@@ -64,7 +79,7 @@ The symmetric indexed array `a` is of type `int` and is 100 elements. The symmet
 Arrays declared with the `symarray[T:SomeNumber]` type are created dynamically at runtime. 
 
 ```
-SymmetricBlock:
+SymmetricMain:
     var a = newSymArray[int]([1,2,3,4,5])
     var b = newSymArray[int](a.len)
 ```
@@ -96,7 +111,7 @@ Symmetric scalar values are declared using the following types:
 * `symfloat`, `symfloat32`, `symfloat64`
 
 ```
-SymmetricBlock:
+SymmetricMain:
    var z : symscalar[int]
    var a : symint
    var b : symfloat

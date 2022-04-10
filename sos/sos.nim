@@ -146,100 +146,6 @@ fsymoperators(symfloat, float)
 fsymoperators(symfloat32, float32)
 fsymoperators(symfloat64, float64)
 
-#[
-macro sosSymScalarDecl*(body : untyped) : untyped =
-   # sosSymmetricVars:
-   #    var a : int
-   #    var b : float
-   #    var
-   #       cee : int
-   #       d : float
-   #
-   # cee = 4
-   # echo "value", cee
-   #
-   # var dee = 1
-   # var eff = 2
-   # echo dee
-   # echo eff
-   #
-   # let types : seq[string] = @["int", "int8", "int16", "int32", "int64", "float", "float32", "float64", "uint", "uint8", "uint16", "uint32"]
-   #
-   if body.kind != nnkStmtList:
-        error("sosStatic expects nnkBlockStmt")
-
-   result = newStmtList()
-
-   for child in body:
-      if child.kind == nnkVarSection:
-         for c in child:
-            # c[0] = variable name
-            # c[1] = variable type
-            #
-            if c[1].kind != nnkEmpty:
-               let varname : string = c[0].strVal
-               let typename : string = c[1].strVal
-               #var ctype : string 
-               var nimtype : string
-               case typename:
-                  of "symint":
-                     #ctype = "int"
-                     nimtype = "int"
-                  of "symint8":
-                     #ctype = "int"
-                     nimtype = "int8"
-                  of "symint16":
-                     #ctype = "int"
-                     nimtype = "int16"
-                  of "symint32":
-                     #ctype = "int"
-                     nimtype = "int32"
-                  of "symint64":
-                     #ctype = "int64_t"
-                     nimtype = "int64"
-                  of "symuint":
-                     #ctype = "unsigned int"
-                     nimtype = "uint"
-                  of "symuint8":
-                     #ctype = "uint8_t"
-                     nimtype = "uint8"
-                  of "symuint16":
-                     #ctype = "uint16_t"
-                     nimtype = "uint16"
-                  of "symuint32":
-                     #ctype = "uint32_t"
-                     nimtype = "uint32"
-                  of "symuint64":
-                     #ctype = "uint64_t"
-                     nimtype = "uint64"
-                  of "symfloat":
-                     #ctype = "float"
-                     nimtype = "float"
-                  of "symfloat32":
-                     #ctype = "float"
-                     nimtype = "float32"
-                  of "symfloat64":
-                     #ctype = "double"
-                     nimtype = "float64"
-                  else:
-                     error("***sosStatic*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
-
-               # create a 'shadow' variable that is annotated to be static
-               # (placed in the underlying C program's data segment); to do
-               # this, hash the variable's name, create a new variable that
-               # has the name `variablenameVariableHashValueVariableName`;
-               # the user's provided variable `symscalar` is an address to
-               # this 'shadow' variable
-               #
-               let pragmaStr : string = " {.codegenDecl: \"static $# $# \" .}"
-               let varnamehashstr : string = intToStr(hash(varname))
-               let varnamehashvar : string = varname & varnamehashstr & varname
-               let fullStr : string = "var " & varnamehashvar & pragmaStr & " : " & nimtype
-               let symfullStr : string = "var " & varname & " : " & typename & " = unsafeAddr(" & varnamehashvar & ")"
-               result.add( parseStmt(fullStr) )
-               result.add( parseStmt(symfullStr) )
-]#
-
 type symarray*[T : SomeNumber] = object
     ## a symarrayuence type for SomeNumber values;
     ## the memory for every value in the symarrayuence
@@ -389,79 +295,6 @@ proc distribute*[T : SomeNumber](src : symarray[T], num : Positive, spread=true)
 type symptrarr[T : SomeNumber] = ptr UncheckedArray[T]
 type symindexarray*[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
 
-#[
-macro sosSymIndexArrayDecl*(body : untyped) : untyped =
-    if body.kind != nnkStmtList:
-        error("sosStatic expects nnkBlockStmt")
-
-    result = newStmtList()
-
-    for child in body:
-        if child.kind == nnkVarSection:
-            for c in child:
-                # c[0] = variable name
-                # c[1] = variable type
-                #
-                if c[1].kind != nnkEmpty:
-                    let varname : string = c[0].strVal
-                    if c[1].kind == nnkBracketExpr:
-                        if c[1][0].len != 3:
-                            error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not symindexarray")
-
-                        if c[1][0].strVal == "symindexarray":
-                            let nelem : int = int(c[1][1].intVal)
-                            if nelem < 0:
-                                error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s size is < 0")
-
-                            let typename : string = c[1][2].strVal
-                            var ctype : string
-                            case typename:
-                                of "int":
-                                    ctype = "int"
-                                of "int8":
-                                    ctype = "int"
-                                of "int16":
-                                    ctype = "int"
-                                of "int32":
-                                    ctype = "int"
-                                of "int64":
-                                    ctype = "int64_t"
-                                of "uint":
-                                    ctype = "unsigned int"
-                                of "uint8":
-                                    ctype = "uint8_t"
-                                of "uint16":
-                                    ctype = "uint16_t"
-                                of "uint32":
-                                    ctype = "uint32_t"
-                                of "uint64":
-                                    ctype = "uint64_t"
-                                of "float":
-                                    ctype = "float"
-                                of "float32":
-                                    ctype = "float"
-                                of "float64":
-                                    ctype = "double"
-                                else:
-                                    error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
-
-                            # create a 'shadow' variable that is annotated to be static
-                            # (placed in the underlying C program's data segment); to do
-                            # this, hash the variable's name, create a new variable that
-                            # has the name `variablenameVariableHashValueVariableName`;
-                            # the user's provided variable `symscalar` is an address to
-                            # this 'shadow' variable
-                            #
-                            let varnamehashstr : string = intToStr(hash(varname))
-                            let varnamehashvar : string = varname & varnamehashstr & varname
-                            let codegen : string = "static " & ctype & " " & varnamehashvar & " [" & $nelem & "]"
-                            let pragmaStr : string = " {.emit: \"" & codegen & " \" .}"
-                            let symfullStr : string = "var " & varname & " : symindexarray[ " & $nelem & ", " & typename & " ] = ( " & $nelem & ", unsafeAddr( " & varnamehashvar & " ) )"
-                            #echo pragmaStr, '\n', symfullStr
-                            result.add( parseStmt(pragmaStr) )
-                            result.add( parseStmt(symfullStr) )
-]#
-
 proc len*[I, T](self: symindexarray[I, T]): uint64 {.inline.} = self.nelem
 
 proc `[]`*[I, T](self:symindexarray[I, T], i: Natural): lent T =
@@ -538,29 +371,6 @@ proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, s
             result[i].len = last-first
             result[i].owned = false
             first = last    
-
-#[
-type symindexmatrix*[ AxB : tuple[ R : static[int], C : static[int] ], T : SomeNumber] = tuple[ rows : int, cols : int, data : symptrarr[T] ]
-
-type symmatrix*[T] = object
-    rows : int
-    cols : int
-    owned : bool
-    data : ptr UncheckedArray[T]
-
-type symindextensor*[ indices : static[array[ static[int], int ]], T : SomeNumber] = tuple[ indices : static[array[ static[int], int ]], data : symptrarr[T] ]
-
-type symtensor*[T] = object
-    indices : seq[int]
-    owned : bool
-    data : ptr UncheckedArray[T]
-
-type SomeSymmetricArray = symarray[SomeNumber]
-type SomeSymmetricMatrix = symmatrix[SomeNumber]
-type SomeSymmetricTensor = symtensor[SomeNumber]
-
-type SomeSymmetric* = SomeSymmetricNumber | SomeSymmetricArray | SomeSymmetricMatrix | SomeSymmetricTensor
-]#
 
 ### beg -> block to remove when matrix, and tensor are ready
 type SomeSymmetricArray = symarray[SomeNumber]
@@ -788,14 +598,6 @@ proc quiet*() =
 proc barrier*() : int =
     bindings.barrier_all()
 
-#[
-template sosBlock*(body : untyped) =
-    bindings.ini()
-    block:
-        body
-    bindings.fin()
-]#
-
 const collapseSymChoice = not defined(nimLegacyMacrosCollapseSymChoice)
 
 proc sosAnalyzeTree(n : NimNode, stmts: var NimNode, level = 0) =
@@ -957,7 +759,7 @@ proc sosVarAnalyze(n:NimNode) : NimNode =
 
 macro sosVarDecl(s : untyped) : untyped = s.sosVarAnalyze
 
-template SymmetricBlock*(body : untyped) =
+template SymmetricMain*(body : untyped) =
     sosVarDecl:
         body
     bindings.ini()
