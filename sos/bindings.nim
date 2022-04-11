@@ -99,7 +99,7 @@ macro nbget*(dst : ptr openarray[typed], src : ptr UncheckedArray[typed], nelems
     result.add( bindSym"nbget", dst, src )
 
 proc sync_all*() : int {.importc: "shmem_sync_all", header: "<shmem.h>".}
-proc barrier_all*() : int {.importc: "barrier_all", header: "<shmem.h>".}
+proc barrier_all*() {.importc: "shmem_barrier_all", header: "<shmem.h>".}
 
 proc min_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
 proc min_reduce*(team : Team, dst : ptr UncheckedArray[int32], src : ptr UncheckedArray[int32],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}

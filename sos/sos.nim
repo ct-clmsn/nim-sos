@@ -234,7 +234,7 @@ proc `[]`*[T:SomeNumber](self: var symarray[T], s : Slice[T]) : seq[T] =
     newSeq(result, L)
     for i in 0 .. L: result[i] = self.data[i+s.a]
 
-proc `[]=`*[T:SomeNumber](self: var symarray[T], s : Slice[T], b : openarray[T]) =
+proc `[]=`*[T:SomeNumber](self: var symarray[T], s : Slice[T], b : openArray[T]) =
     assert( (s.a > -1) and (s.b < self.len) and ((s.b-s.a) < b.len) )
     let L = s.b-s.a
     let minL = min(L, b.len)
@@ -293,50 +293,53 @@ proc distribute*[T : SomeNumber](src : symarray[T], num : Positive, spread=true)
             first = last    
 
 type symptrarr[T : SomeNumber] = ptr UncheckedArray[T]
+
+#type symindexarray*[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
+#
 type symindexarray*[ I : static[int], T : SomeNumber] = tuple[ nelem : int, data : symptrarr[T] ]
 
-proc len*[I, T](self: symindexarray[I, T]): uint64 {.inline.} = self.nelem
+proc len*[I : static[int], T : SomeNumber](self: symindexarray[I, T]): int {.inline.} = self.nelem
 
-proc `[]`*[I, T](self:symindexarray[I, T], i: Natural): lent T =
+proc `[]`*[I : static[int], T : SomeNumber](self:symindexarray[I, T], i: Natural): lent T =
     ## return a value at position 'i'
     ##
-    assert cast[uint64](i) < self.len
+    assert cast[int](i) < self.nelem
     self.data[i]
 
-proc `[]=`*[I, T](self: var symindexarray[I, T]; i: Natural; y: sink T) =
+proc `[]=`*[I : static[int], T : SomeNumber](self: var symindexarray[I, T]; i: Natural; y: sink T) =
     ## assign a value at position 'i' equal to
     ## the value 'y'
     ##
     assert i < self.len
     self.data[i] = y
 
-proc `[]`*[I, T](self: var symindexarray[I, T], s : Slice[T]) : seq[T] =
+proc `[]`*[I : static[int], T : SomeNumber](self: var symindexarray[I, T], s : Slice[T]) : seq[T] =
     assert( ((s.b-s.a) < self.len) and s.a > -1 and s.b < self.len )
     let L = abs(s.b-s.a)
     newSeq(result, L)
     for i in 0 .. L: result[i] = self.data[i+s.a]
 
-proc `[]=`*[I, T](self: var symindexarray[I, T], s : Slice[T], b : openarray[T]) =
+proc `[]=`*[I : static[int], T : SomeNumber](self: var symindexarray[I, T], s : Slice[T], b : openArray[T]) =
     assert( (s.a > -1) and (s.b < self.len) and ((s.b-s.a) < b.len) )
     let L = s.b-s.a
     let minL = min(L, b.len)
     for i in 0 .. minL: self.data[i+s.a] = b[i]
 
-iterator items*[I, T](self : symindexarray[I, T]) : T =
+iterator items*[I : static[int], T : SomeNumber](self : symindexarray[I, T]) : T =
     ## iterator over the elements in a symarray
     ##
     let rng = 0..<self.len
     for i in rng:
         yield self.data[i-rng.sp] 
 
-iterator pairs*[I, T](self : symindexarray[I, T]) : T =
+iterator pairs*[I : static[int], T : SomeNumber](self : symindexarray[I, T]) : T =
     ## iterator returns pairs (index, value) over elements in a symarray
     ##
     let rng = 0..<self.len
     for i in rng.sp..rng.ep:
         yield (i, self.data[i-rng.sp])
 
-proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, spread=true) : seq[symarray[T]] =
+proc distribute*[I : static[int]; T : SomeNumber](src : symindexarray[I, T], num : Positive, spread=true) : seq[symarray[T]] =
     ## Splits a symarray[T] into num a sequence of symarray's;
     ## symarray's do not `own` their data.
     ##
@@ -372,6 +375,38 @@ proc distribute*[I; T : SomeNumber](src : symindexarray[I, T], num : Positive, s
             result[i].owned = false
             first = last    
 
+proc put*[I : static[int], T : SomeNumber](src : var openArray[T], dst : symindexarray[I, T], pe : int) =
+    ## synchronous put; transfers byte in `src` in the current process virtual address space to
+    ## process `id` at address `dst` in the destination. Users must check for completion or invoke
+    ## sym_wait. Do not modify the symarray before the transfer terminates
+    ##
+    bindings.put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
+
+proc get*[I : static[int], T : SomeNumber](dst : var openArray[T], src : symindexarray[I, T], pe : int) =
+    ## synchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
+    ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
+    ## Do not modify the symarray before the transfer terminates
+    ## 
+    bindings.get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
+
+proc get*[I : static[int], T : SomeNumber](self : symindexarray[I, T], pe : int) : openArray[T] =
+    result.setLen(self.len)
+    bindings.get(result, self, pe)
+
+proc nbput*[I : static[int], T : SomeNumber](src : var openArray[T], dst : symindexarray[I, T], pe : int) =
+    ## asynchronous put; transfers byte in `src` in the current process virtual address space to
+    ## process `id` at address `dst` in the destination. Users must check for completion or invoke
+    ## sym_wait. Do not modify the symarray before the transfer terminates
+    ##
+    bindings.nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
+
+proc nbget*[I : static[int], T : SomeNumber](dst : var openArray[T], src : symindexarray[I, T], pe : int) =
+    ## asynchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
+    ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
+    ## Do not modify the symarray before the transfer terminates
+    ## 
+    bindings.nbget(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
+
 ### beg -> block to remove when matrix, and tensor are ready
 type SomeSymmetricArray = symarray[SomeNumber]
 
@@ -387,41 +422,41 @@ proc ini*() =
 proc fin*() =
     bindings.fin()
 
-proc npes() : uint32 =
+proc npes*() : uint32 =
     result = bindings.n_pes()
 
-proc mype() : uint32 =
+proc mype*() : uint32 =
     result = bindings.my_pe()
 
 proc partitioner(global_nelems : int) : int =
     return int(ceil(float64(global_nelems) / float64(bindings.n_pes())))
 
-proc put*[T : SomeNumber](src : var openarray[T], dst : symarray[T], pe : int) =
+proc put*[T : SomeNumber](src : var openArray[T], dst : symarray[T], pe : int) =
     ## synchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## sym_wait. Do not modify the symarray before the transfer terminates
     ##
     bindings.put(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc get*[T : SomeNumber](dst : var openarray[T], src : symarray[T], pe : int) =
+proc get*[T : SomeNumber](dst : var openArray[T], src : symarray[T], pe : int) =
     ## synchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symarray before the transfer terminates
     ## 
     bindings.get(unsafeAddr(dst), src.data, T.sizeof * src.len, pe)
 
-proc get*[T : SomeNumber](self : symarray[T], pe : int) : openarray[T] =
+proc get*[T : SomeNumber](self : symarray[T], pe : int) : openArray[T] =
     result.setLen(self.len)
     bindings.get(result, self, pe)
 
-proc nbput*[T : SomeNumber](src : var openarray[T], dst : symarray[T], pe : int) =
+proc nbput*[T : SomeNumber](src : var openArray[T], dst : symarray[T], pe : int) =
     ## asynchronous put; transfers byte in `src` in the current process virtual address space to
     ## process `id` at address `dst` in the destination. Users must check for completion or invoke
     ## sym_wait. Do not modify the symarray before the transfer terminates
     ##
     bindings.nbput(dst.data, unsafeAddr(src), T.sizeof * src.len, pe)
 
-proc nbget*[T : SomeNumber](dst : var openarray[T], src : symarray[T], pe : int) =
+proc nbget*[T : SomeNumber](dst : var openArray[T], src : symarray[T], pe : int) =
     ## asynchronous get; transfers bytes in `src` in a remote process `id`'s virtual address space
     ## into the current process at address `dst`. Users must check for completion or invoke sym_wait.
     ## Do not modify the symarray before the transfer terminates
@@ -432,7 +467,7 @@ type ModeKind* = enum
     blocking,
     nonblocking
 
-proc put*[T : SomeNumber](mk : ModeKind, src : var openarray[T], dst : symarray[T], pe : int) =
+proc put*[T : SomeNumber](mk : ModeKind, src : var openArray[T], dst : symarray[T], pe : int) =
     case mk:
     of blocking:
         put(src, dst, pe)
@@ -469,18 +504,18 @@ sput(float, symfloat)
 sput(float32, symfloat32)
 sput(float64, symfloat64)
 
-proc get*[T : SomeNumber](mk : ModeKind, dst : var openarray[T], src : symarray[T], pe : int) =
+proc get*[T : SomeNumber](mk : ModeKind, dst : var openArray[T], src : symarray[T], pe : int) =
     case mk:
     of blocking:
         get(dst, src, pe) 
     of nonblocking:
         nbget(dst, src, pe)
 
-proc get*[T : SomeNumber](self : symarray[T], mk : ModeKind, pe : int) : openarray[T] =
+proc get*[T : SomeNumber](self : symarray[T], mk : ModeKind, pe : int) : openArray[T] =
     result.setLen(self.len)
     get(result, self, pe)
 
-proc get*[T : SomeNumber](mk : ModeKind, self : symarray[T], pe : int) : openarray[T] =
+proc get*[T : SomeNumber](mk : ModeKind, self : symarray[T], pe : int) : openArray[T] =
     result.setLen(self.len)
     get(result, self, pe)
 
@@ -527,15 +562,15 @@ type ReductionKind* = enum
     prodop
 
 proc reduce*[T:SomeNumber](rk : ReductionKind, team : Team, dst : symarray[T], src : symarray[T] ) : T =
-    case rk:
+  case rk:
     of minop:
-        result = bindings.min_reduce(team, dst.data, src.data, dst.len)
+      result = bindings.min_reduce(team, dst.data, src.data, dst.len)
     of maxop:
-        result = bindings.max_reduce(team, dst.data, src.data, dst.len)
+      result = bindings.max_reduce(team, dst.data, src.data, dst.len)
     of sumop:
-        result = bindings.sum_reduce(team, dst.data, src.data, dst.len)
+      result = bindings.sum_reduce(team, dst.data, src.data, dst.len)
     of prodop: 
-        result = bindings.prod_reduce(team, dst.data, src.data, dst.len)
+      result = bindings.prod_reduce(team, dst.data, src.data, dst.len)
 
 proc min*[T:SomeNumber](team : Team, dst : symarray[T], src : symarray[T]) : T =
     result = reduce(minop, team, dst, src)
@@ -556,34 +591,34 @@ proc alltoall*[T:SomeNumber](team : Team, dst : symarray[T], src : symarray[T]) 
     result = bindings.alltoall(team, dst.data, src, dst.len)
 
 template scollectives(typa:typedesc, typb:typedesc) =
-    proc reduce*(rk : ReductionKind, team : Team, dst : typa, src : typa ) : typb =
-        case rk:
-        of minop:
-            result = bindings.min_reduce(team, dst, src, 1)
-        of maxop:
-            result = bindings.max_reduce(team, dst, src, 1)
-        of sumop:
-            result = bindings.sum_reduce(team, dst, src, 1)
-        of prodop:
-            result = bindings.prod_reduce(team, dst, src, 1)
+  proc reduce*(rk : ReductionKind, team : Team, dst : typa, src : typa ) : typb =
+    case rk:
+      of minop:
+        result = bindings.min_reduce(team, dst, src, 1)
+      of maxop:
+        result = bindings.max_reduce(team, dst, src, 1)
+      of sumop:
+        result = bindings.sum_reduce(team, dst, src, 1)
+      of prodop:
+        result = bindings.prod_reduce(team, dst, src, 1)
 
-    proc min*(team : Team, dst : typa, src : typa) : typb =
-        result = reduce(minop, team, dst, src)
+  proc min*(team : Team, dst : typa, src : typa) : typb =
+    result = reduce(minop, team, dst, src)
 
-    proc max*(team : Team, dst : typa, src : typa) : typb =
-        result = reduce(maxop, team, dst, src)
+  proc max*(team : Team, dst : typa, src : typa) : typb =
+    result = reduce(maxop, team, dst, src)
 
-    proc sum*(team : Team, dst : typa, src : typa) : typb =
-        result = reduce(sumop, team, dst, src)
+  proc sum*(team : Team, dst : typa, src : typa) : typb =
+    result = reduce(sumop, team, dst, src)
 
-    proc prod*(team : Team, dst : typa, src : typa) : typb =
-        result = reduce(prodop, team, dst, src)
+  proc prod*(team : Team, dst : typa, src : typa) : typb =
+    result = reduce(prodop, team, dst, src)
 
-    proc broadcast*(team : Team, dst : typa, src : typa, root: int) : int =
-        result = bindings.broadcast(team, dst, src, 1, root)
+  proc broadcast*(team : Team, dst : typa, src : typa, root: int) : int =
+    result = bindings.broadcast(team, dst, src, 1, root)
 
-    proc alltoall*(team : Team, dst : typa, src : typa) : int =
-        result = bindings.alltoall(team, dst, src, 1)
+  proc alltoall*(team : Team, dst : typa, src : typa) : int =
+    result = bindings.alltoall(team, dst, src, 1)
 
 scollectives(SomeSymmetricInt, SomeInteger)
 scollectives(SomeSymmetricUInt, SomeUnsignedInt)
@@ -595,7 +630,7 @@ proc fence*() =
 proc quiet*() =
     bindings.quiet()
 
-proc barrier*() : int =
+proc barrier*() =
     bindings.barrier_all()
 
 const collapseSymChoice = not defined(nimLegacyMacrosCollapseSymChoice)
@@ -671,7 +706,7 @@ proc sosAnalyzeTree(n : NimNode, stmts: var NimNode, level = 0) =
               let pragmaStr : string = "var " & varnamehashvar & " {.codegenDecl: \"" & codegen & " \".} : ptr UncheckedArray[" & typename & "]"
               let symfullStr : string = "var " & varname & " : symindexarray[ " & $nelem & ", " & typename & " ] = ( " & $nelem & ", " & varnamehashvar & " )"
 
-              echo pragmaStr, '\n', symfullStr
+              #echo pragmaStr, '\n', symfullStr
 
               stmts.add( parseStmt(pragmaStr) )
               stmts.add( parseStmt(symfullStr) )
@@ -719,25 +754,26 @@ proc sosAnalyzeTree(n : NimNode, stmts: var NimNode, level = 0) =
               of "symfloat64":
                 #ctype = "double"
                 nimtype = "float64"
-              else:
-                error("***sosStatic*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
+              #else:
+              #  error("***sosStatic*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
 
-            # create a 'shadow' variable that is annotated to be static
-            # (placed in the underlying C program's data segment); to do
-            # this, hash the variable's name, create a new variable that
-            # has the name `variablenameVariableHashValueVariableName`;
-            # the user's provided variable `symscalar` is an address to
-            # this 'shadow' variable
-            #
-            let pragmaStr : string = " {.codegenDecl: \"static $# $# \" .}"
-            let varnamehashstr : string = intToStr(hash(varname))
-            let varnamehashvar : string = varname & varnamehashstr & varname
-            let fullStr : string = "var " & varnamehashvar & pragmaStr & " : " & nimtype
-            let symfullStr : string = "var " & varname & " : " & typename & " = unsafeAddr(" & varnamehashvar & ")"
+            if nimtype.len > 0:
+              # create a 'shadow' variable that is annotated to be static
+              # (placed in the underlying C program's data segment); to do
+              # this, hash the variable's name, create a new variable that
+              # has the name `variablenameVariableHashValueVariableName`;
+              # the user's provided variable `symscalar` is an address to
+              # this 'shadow' variable
+              #
+              let pragmaStr : string = " {.codegenDecl: \"static $# $# \" .}"
+              let varnamehashstr : string = intToStr(hash(varname))
+              let varnamehashvar : string = varname & varnamehashstr & varname
+              let fullStr : string = "var " & varnamehashvar & pragmaStr & " : " & nimtype
+              let symfullStr : string = "var " & varname & " : " & typename & " = unsafeAddr(" & varnamehashvar & ")"
 
-            echo fullStr, '\n', symfullStr
-            stmts.add( parseStmt(fullStr) )
-            stmts.add( parseStmt(symfullStr) )
+              #echo fullStr, '\n', symfullStr
+              stmts.add( parseStmt(fullStr) )
+              stmts.add( parseStmt(symfullStr) )
 
     elif n.kind in {nnkOpenSymChoice, nnkClosedSymChoice} and collapseSymChoice:
       if n.len > 0:
