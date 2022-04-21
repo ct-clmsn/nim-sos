@@ -14,7 +14,7 @@ Symmetric scalars are globally addressable scalar values.
 
 ## SymmetricMain
 
-The `SymmetricMain` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricMain` macro is a *one-stop-shop* users. *Use of the `SymmetricMain` is mandatory*, the macro finds all symmetric types in a user's program, exposes them to OpenSHMEM, initializes and finalizes OpenSHMEM. The `SymmetricMain` macro can be used as a pragma `{.SymmetricMain.}`.
+The `SymmetricMain` macro detects symmetric array and symmetric scalar types during compilation and exposes them to OpenSHMEM. The `SymmetricMain` macro is a *one-stop-shop* for users. *Use of the `SymmetricMain` is mandatory*, the macro finds all symmetric types in a user's program, exposes them to OpenSHMEM, initializes and finalizes OpenSHMEM. The `SymmetricMain` macro can be used as a pragma `{.SymmetricMain.}`.
 
 ```
 SymmetricMain:
