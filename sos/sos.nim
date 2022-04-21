@@ -773,12 +773,12 @@ proc sosAnalyzeTree(n : NimNode, stmts: var NimNode, level = 0) =
           let varname : string = c[0].strVal
           if c[1].kind == nnkBracketExpr:
             if c[1].len != 3:
-              error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not symsarray")
+              error("***sosSymStaticArrayDecl*** Found Error -> Variable: " & varname & "'s type not symsarray")
 
             if c[1][0].strVal == "symsarray":
               let nelem : int = int(c[1][1].intVal)
               if nelem < 0:
-                error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s size is < 0")
+                error("***sosSymStaticArrayDecl*** Found Error -> Variable: " & varname & "'s size is < 0")
 
               let typename : string = c[1][2].strVal
               var ctype : string
@@ -810,7 +810,7 @@ proc sosAnalyzeTree(n : NimNode, stmts: var NimNode, level = 0) =
                 of "float64":
                   ctype = "double"
                 else:
-                  error("***sosSymIndexArrayDecl*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
+                  error("***sosSymStaticArrayDecl*** Found Error -> Variable: " & varname & "'s type not SomeNumber; type is " & typename)
 
               # create a 'shadow' variable that is annotated to be static
               # (placed in the underlying C program's data segment); to do
