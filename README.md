@@ -8,7 +8,7 @@
 
 `nim-sos` provides a *symmetric array type* and a *symmetric scalar type*.
 
-Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types). Symmetric arrays only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property. Symmetric arrays are distributed and globally addressable. Symmetric arrays created with a size as part of their type are called 'symmetric indexed arrays'. Symmetric arrays created on the heap w/`newSymArray` are simply called symmetric arrays.
+Symmetric arrays are an extension to the existing [Nim array](https://nim-lang.org/docs/manual.html#types-array-and-sequence-types). Symmetric arrays only support values that are of [SomeNumber](https://nim-lang.org/docs/system.html#SomeNumber) types. Symmetric arrays provide element-access, slice, iterator, and partitioning support. Symmetric arrays cannot be appended to; 'add' or 'append' functionality breaks the symmetry property. Symmetric arrays are distributed and globally addressable. Symmetric arrays created with a size as part of their type are called 'symmetric static arrays'. Symmetric arrays created on the heap w/`newSymArray` are simply called symmetric arrays.
 
 Symmetric scalars are globally addressable scalar values.
 
@@ -66,15 +66,15 @@ Consider the Symmetric array `S` that is created in an SPMD program running on 2
 Users are required to define the size of each partition when creating a Symmetric array. Calling the constructor `newSymArray[int](100)` for a 32 node program run will create a Symmetric array with 32 partitions, each partition being 100 integers in type and length. A convenience function called `partitioner` is provided to calculate a partition size given the global number of elements that need to be stored. If a user needs a Symmetric array stored on 32 nodes for 3200 integers, `partitioner` will perform the simple calculation and return 100 integers for each partition.
 
 
-Symmetric arrays can be instantiated either at compile-time or at runtime. Compile-time (static) symmetric arrays are called `symmetric indexed arrays`. Runtime (dynamic) symmetric arrays are called `symmetric arrays`. The naming convention is used to differentiate the memory allocation used to instatiate the array. To create a compile-time symmetric array, utilize the following type `symindexarray[A, B]` where `A` is an integer value denoting the size of the array to create at compile time and `B` is of `SomeNumber` type.
+Symmetric arrays can be instantiated either at compile-time or at runtime. Compile-time (static) symmetric arrays are called `symmetric static arrays`. Runtime (dynamic) symmetric arrays are called `symmetric arrays`. The naming convention is used to differentiate the memory allocation used to instatiate the array. To create a compile-time symmetric array, utilize the following type `symindexarray[A, B]` where `A` is an integer value denoting the size of the array to create at compile time and `B` is of `SomeNumber` type.
 
 ```
 SymmetricMain:
-   var a : symindexarray[100, int]
-   var b : symindexarray[500, float64]
+   var a : symsarray[100, int]
+   var b : symsarray[500, float64]
 ```
 
-The symmetric indexed array `a` is of type `int` and is 100 elements. The symmetric indexed array `b` is of type `float64` and is 500 elements.
+The symmetric static array `a` is of type `int` and is 100 elements. The symmetric static array `b` is of type `float64` and is 500 elements.
 
 Arrays declared with the `symarray[T:SomeNumber]` type are created dynamically at runtime. 
 
