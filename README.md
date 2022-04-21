@@ -174,7 +174,7 @@ nimble doc sos
 ### Running Programs
 
 ```
-oshrun -n 2 -ppn 1 -hosts compute1,compute2
+oshrun -n2 --mpi=pmi2 <program_name>
 ```
 
 This library is designed to be run on an HPC system that manages jobs using the following workload managers: [Slurm](https://slurm.schedmd.com), PBS, etc.

@@ -5,12 +5,12 @@
 #  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 {.deadCodeElim: on.}
-{.passL: "-lrt -lpmi_simple -lsma" .}
+#{.passL: "-lsma -lpmi2 -lnss -pthread -lrt ".}
 import std/macros
 
-{.emit: """#include<mpp/shmem-def.h>""".}
+{.emit: """#include<shmem-def.h>""".}
 
-type Team* {.importc: "shmem_team_t", header: "<mpp/shmem-def.h>".} = object
+type Team* {.importc: "shmem_team_t", header: "<shmem-def.h>".} = object
 type Context* {.importc: "shmem_context_t", header: "<shmem.h>".} = object
 type Config* {.importc: "shmem_config_t", header: "<shmem.h>".} = object
 
@@ -101,140 +101,65 @@ macro nbget*(dst : ptr openarray[typed], src : ptr UncheckedArray[typed], nelems
 proc sync_all*() : int {.importc: "shmem_sync_all", header: "<shmem.h>".}
 proc barrier_all*() {.importc: "shmem_barrier_all", header: "<shmem.h>".}
 
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[int32], src : ptr UncheckedArray[int32],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[int64], src : ptr UncheckedArray[int64],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cshort, src : ptr cshort,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cint, src : ptr cint,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr clong, src : ptr clong,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
 
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[uint], src : ptr UncheckedArray[uint],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr UncheckedArray[uint32],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr UncheckedArray[uint64],  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cushort, src : ptr cushort,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cuint, src : ptr cuint,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr culong, src : ptr culong,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
 
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[float32], src : ptr UncheckedArray[float32],  nelems : int) : int {.importc: "shmem_float_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr UncheckedArray[float64], src : ptr UncheckedArray[float64],  nelems : int) : int {.importc: "shmem_double_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cfloat, src : ptr cfloat,  nelems : int) : int {.importc: "shmem_float_min_reduce", header: "<shmem.h>".}
+proc min_reduce*(team : Team, dst : ptr cdouble, src : ptr cdouble,  nelems : int) : int {.importc: "shmem_double_min_reduce", header: "<shmem.h>".}
 
-macro min_reduce*(team : Team, dst : ptr UncheckedArray[typed], src : ptr UncheckedArray[typed],  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"min_reduce", team, src, dst, nelems)
+#macro min_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
+#    result = newStmtList()
+#    result.add( bindSym"min_reduce", team, src, dst, nelems)
 
-proc min_reduce*(team : Team, dst : ptr int, src : ptr int,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr int64, src : ptr int64,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cshort, src : ptr cshort,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cint, src : ptr cint,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr clong, src : ptr clong,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
 
-proc min_reduce*(team : Team, dst : ptr uint, src : ptr uint,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr uint32, src : ptr uint32,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr uint64, src : ptr uint64,  nelems : int) : int {.importc: "shmem_int_min_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cushort, src : ptr cushort,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cuint, src : ptr cuint,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr culong, src : ptr culong,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
 
-proc min_reduce*(team : Team, dst : ptr float32, src : ptr float32,  nelems : int) : int {.importc: "shmem_float_min_reduce", header: "<shmem.h>".}
-proc min_reduce*(team : Team, dst : ptr float64, src : ptr float64,  nelems : int) : int {.importc: "shmem_double_min_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cfloat, src : ptr cfloat,  nelems : int) : int {.importc: "shmem_float_max_reduce", header: "<shmem.h>".}
+proc max_reduce*(team : Team, dst : ptr cdouble, src : ptr cdouble,  nelems : int) : int {.importc: "shmem_double_max_reduce", header: "<shmem.h>".}
 
-macro min_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"min_reduce", team, src, dst, nelems)
+#macro max_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
+#    result = newStmtList()
+#    result.add( bindSym"max_reduce", team, src, dst, nelems)
 
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[int32], src : ptr UncheckedArray[int32],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[int64], src : ptr UncheckedArray[int64],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cshort, src : ptr cshort,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cint, src : ptr cint,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr clong, src : ptr clong,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
 
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[uint], src : ptr UncheckedArray[uint],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr UncheckedArray[uint32],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr UncheckedArray[uint64],  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cushort, src : ptr cushort,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cuint, src : ptr cuint,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr culong, src : ptr culong,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
 
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[float32], src : ptr UncheckedArray[float32],  nelems : int) : int {.importc: "shmem_float_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr UncheckedArray[float64], src : ptr UncheckedArray[float64],  nelems : int) : int {.importc: "shmem_double_max_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cfloat, src : ptr cfloat,  nelems : int) : int {.importc: "shmem_float_sum_reduce", header: "<shmem.h>".}
+proc sum_reduce*(team : Team, dst : ptr cdouble, src : ptr cdouble,  nelems : int) : int {.importc: "shmem_double_sum_reduce", header: "<shmem.h>".}
 
-macro max_reduce*(team : Team, dst : ptr UncheckedArray[typed], src : ptr UncheckedArray[typed],  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"max_reduce", team, src, dst, nelems)
+#macro sum_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
+#    result = newStmtList()
+#    result.add( bindSym"sum_reduce", team, src, dst, nelems)
 
-proc max_reduce*(team : Team, dst : ptr int, src : ptr int,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr int64, src : ptr int64,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cshort, src : ptr cshort,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cint, src : ptr cint,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr clong, src : ptr clong,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
 
-proc max_reduce*(team : Team, dst : ptr uint, src : ptr uint,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr uint32, src : ptr uint32,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr uint64, src : ptr uint64,  nelems : int) : int {.importc: "shmem_int_max_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cushort, src : ptr cushort,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cuint, src : ptr cuint,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr culong, src : ptr culong,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
 
-proc max_reduce*(team : Team, dst : ptr float32, src : ptr float32,  nelems : int) : int {.importc: "shmem_float_max_reduce", header: "<shmem.h>".}
-proc max_reduce*(team : Team, dst : ptr float64, src : ptr float64,  nelems : int) : int {.importc: "shmem_double_max_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cfloat, src : ptr cfloat,  nelems : int) : int {.importc: "shmem_float_prod_reduce", header: "<shmem.h>".}
+proc prod_reduce*(team : Team, dst : ptr cdouble, src : ptr cdouble,  nelems : int) : int {.importc: "shmem_double_prod_reduce", header: "<shmem.h>".}
 
-macro max_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"max_reduce", team, src, dst, nelems)
-
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[int32], src : ptr UncheckedArray[int32],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[int64], src : ptr UncheckedArray[int64],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[uint], src : ptr UncheckedArray[uint],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr UncheckedArray[uint32],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr UncheckedArray[uint64],  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[float32], src : ptr UncheckedArray[float32],  nelems : int) : int {.importc: "shmem_float_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr UncheckedArray[float64], src : ptr UncheckedArray[float64],  nelems : int) : int {.importc: "shmem_double_sum_reduce", header: "<shmem.h>".}
-
-macro sum_reduce*(team : Team, dst : ptr UncheckedArray[typed], src : ptr UncheckedArray[typed],  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"sum_reduce", team, src, dst, nelems)
-
-proc sum_reduce*(team : Team, dst : ptr int, src : ptr int,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr int64, src : ptr int64,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-
-proc sum_reduce*(team : Team, dst : ptr uint, src : ptr uint,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr uint32, src : ptr uint32,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr uint64, src : ptr uint64,  nelems : int) : int {.importc: "shmem_int_sum_reduce", header: "<shmem.h>".}
-
-proc sum_reduce*(team : Team, dst : ptr float32, src : ptr float32,  nelems : int) : int {.importc: "shmem_float_sum_reduce", header: "<shmem.h>".}
-proc sum_reduce*(team : Team, dst : ptr float64, src : ptr float64,  nelems : int) : int {.importc: "shmem_double_sum_reduce", header: "<shmem.h>".}
-
-macro sum_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"sum_reduce", team, src, dst, nelems)
-
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[int], src : ptr UncheckedArray[int],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[int32], src : ptr UncheckedArray[int32],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[int64], src : ptr UncheckedArray[int64],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[uint], src : ptr UncheckedArray[uint],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr UncheckedArray[uint32],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr UncheckedArray[uint64],  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[float32], src : ptr UncheckedArray[float32],  nelems : int) : int {.importc: "shmem_float_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr UncheckedArray[float64], src : ptr UncheckedArray[float64],  nelems : int) : int {.importc: "shmem_double_prod_reduce", header: "<shmem.h>".}
-
-macro prod_reduce*(team : Team, dst : ptr UncheckedArray[typed], src : ptr UncheckedArray[typed],  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"prod_reduce", team, src, dst, nelems)
-
-proc prod_reduce*(team : Team, dst : ptr int, src : ptr int,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr int64, src : ptr int64,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-
-proc prod_reduce*(team : Team, dst : ptr uint, src : ptr uint,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr uint32, src : ptr uint32,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr uint64, src : ptr uint64,  nelems : int) : int {.importc: "shmem_int_prod_reduce", header: "<shmem.h>".}
-
-proc prod_reduce*(team : Team, dst : ptr float32, src : ptr float32,  nelems : int) : int {.importc: "shmem_float_prod_reduce", header: "<shmem.h>".}
-proc prod_reduce*(team : Team, dst : ptr float64, src : ptr float64,  nelems : int) : int {.importc: "shmem_double_prod_reduce", header: "<shmem.h>".}
-
-macro prod_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"prod_reduce", team, src, dst, nelems)
-
-proc alltoall*(team : Team, dst : ptr UncheckedArray[int], src : ptr openarray[int],  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
-proc alltoall*(team : Team, dst : ptr UncheckedArray[int32], src : ptr openarray[int32],  nelems : int) : int {.importc: "shmem_int_alltall", header: "<shmem.h>".}
-proc alltoall*(team : Team, dst : ptr UncheckedArray[int64], src : ptr openarray[int64],  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
-
-proc alltoall*(team : Team, dst : ptr UncheckedArray[uint], src : ptr openarray[uint],  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
-proc alltoall*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr openarray[uint32],  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
-proc alltoall*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr openarray[uint64],  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
-
-proc alltoall*(team : Team, dst : ptr UncheckedArray[float32], src : ptr openarray[float32],  nelems : int) : int {.importc: "shmem_float_alltoall", header: "<shmem.h>".}
-proc alltoall*(team : Team, dst : ptr UncheckedArray[float64], src : ptr openarray[float64],  nelems : int) : int {.importc: "shmem_double_alltoall", header: "<shmem.h>".}
-
-macro alltoall*(team : Team, dst : ptr UncheckedArray[typed], src : ptr openarray[typed],  nelems : int) : int =
-    result = newStmtList()
-    result.add( bindSym"alltoall", team, src, dst, nelems)
+#macro prod_reduce*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : int =
+#    result = newStmtList()
+#    result.add( bindSym"prod_reduce", team, src, dst, nelems)
 
 proc alltoall*(team : Team, dst : ptr int, src : ptr int,  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
 proc alltoall*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int) : int {.importc: "shmem_int_alltoall", header: "<shmem.h>".}
@@ -251,21 +176,6 @@ macro alltoall*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int) : 
     result = newStmtList()
     result.add( bindSym"alltoall", team, src, dst, nelems)
 
-proc broadcast*(team : Team, dst : ptr UncheckedArray[int], src : ptr openarray[int],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-proc broadcast*(team : Team, dst : ptr UncheckedArray[int32], src : ptr openarray[int32],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-proc broadcast*(team : Team, dst : ptr UncheckedArray[int64], src : ptr openarray[int64],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-
-proc broadcast*(team : Team, dst : ptr UncheckedArray[uint], src : ptr openarray[uint],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-proc broadcast*(team : Team, dst : ptr UncheckedArray[uint32], src : ptr openarray[uint32],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-proc broadcast*(team : Team, dst : ptr UncheckedArray[uint64], src : ptr openarray[uint64],  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
-
-proc broadcast*(team : Team, dst : ptr UncheckedArray[float32], src : ptr openarray[float32],  nelems : int, root:int) : int {.importc: "shmem_float_broadcast", header: "<shmem.h>".}
-proc broadcast*(team : Team, dst : ptr UncheckedArray[float64], src : ptr openarray[float64],  nelems : int, root:int) : int {.importc: "shmem_double_broadcast", header: "<shmem.h>".}
-
-macro broadcast*(team : Team, dst : ptr UncheckedArray[typed], src : ptr openarray[typed],  nelems : int, root:int) : int =
-    result = newStmtList()
-    result.add( bindSym"broadcast", team, src, dst, nelems, root)
-
 proc broadcast*(team : Team, dst : ptr int, src : ptr int,  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
 proc broadcast*(team : Team, dst : ptr int32, src : ptr int32,  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
 proc broadcast*(team : Team, dst : ptr int64, src : ptr int64,  nelems : int, root:int) : int {.importc: "shmem_int_broadcast", header: "<shmem.h>".}
@@ -281,8 +191,8 @@ macro broadcast*(team : Team, dst : ptr typed, src : ptr typed,  nelems : int, r
     result = newStmtList()
     result.add( bindSym"broadcast", team, src, dst, nelems, root)
 
-proc alloc*[T : SomeNumber]( nelems : int) : ptr UncheckedArray[T] {.importc: "shmem_malloc", header: "<shmem.h>".}
-proc free*[T : SomeNumber](arr : ptr UncheckedArray[T]) {.importc: "shmem_free", header: "<shmem.h>".}
+proc alloc*[T : SomeNumber]( nelems : int) : ptr T {.importc: "shmem_malloc", header: "<shmem.h>".}
+proc free*[T : SomeNumber](arr : ptr T) {.importc: "shmem_free", header: "<shmem.h>".}
 
 proc fence*() {.importc: "shmem_fence", header: "<shmem.h>".}
 proc quiet*() {.importc: "shmem_quiet", header: "<shmem.h>".}
